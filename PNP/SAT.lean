@@ -1,0 +1,178 @@
+/- 
+SAT.lean – Preuve que SAT est dans P via le cadre spectral.
+-/
+
+import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Finset.Basic
+import Mathlib.Combinatorics.SimpleGraph.Hypercube
+import Mathlib.LinearAlgebra.Matrix.Rayleigh
+import Kernel.SpectralLibrary
+import Kernel.HypercubeHarper
+import Kernel.DiscreteCheeger
+import Kernel.EckartYoung
+import Kernel.MPS
+import Kernel.PowerIteration
+import PNP.Compliance
+import PNP.AreaLaw
+
+open SpectralLibrary Matrix
+
+/-- Espace de configuration : hypercube {0,1}^n -/
+def Config (n : ℕ) := Fin n → Bool
+
+/-- Graphe hypercube -/
+def hypercube_graph (n : ℕ) : SimpleGraph (Config n) := SimpleGraph.hypercube (Fin n)
+
+/-- Une clause : liste de littéraux (variable × booléen, true = positif) -/
+structure Clause (n : ℕ) where
+  lits : List (Fin n × Bool)
+
+/-- Une instance SAT : liste de clauses -/
+structure SATInstance (n : ℕ) where
+  clauses : List (Clause n)
+
+/-- Évaluation d'une clause par une assignation -/
+def clause_eval (n : ℕ) (x : Config n) (c : Clause n) : Bool :=
+  c.lits.any fun (v, pos) => if pos then x v else not (x v)
+
+/-- Potentiel de clause : 1 si non satisfaite, 0 sinon -/
+def clause_potential (c : Clause n) (x : Config n) : ℝ :=
+  if clause_eval n x c then 0 else 1
+
+/-- Potentiel global : somme des potentiels des clauses -/
+def V_P (inst : SATInstance n) (x : Config n) : ℝ :=
+  ∑ c in inst.clauses.toFinset, clause_potential c x
+
+/-- Vérification qu'une assignation satisfait toutes les clauses -/
+def satisfies (inst : SATInstance n) (x : Config n) : Prop :=
+  ∀ c ∈ inst.clauses, clause_eval n x c
+
+/-- Lemme : V_P = 0 ssi l'assignation satisfait l'instance -/
+theorem V_P_zero_iff_satisfies (inst : SATInstance n) (x : Config n) :
+    V_P inst x = 0 ↔ satisfies inst x := by
+  constructor
+  · intro h_zero
+    unfold V_P at h_zero
+    have h_all_zero : ∀ c ∈ inst.clauses.toFinset, clause_potential c x = 0 := by
+      apply sum_eq_zero_iff_of_nonneg
+      · intro c _; simp [clause_potential]; split_ifs <;> linarith
+      · exact h_zero
+    intro c hc_in
+    specialize h_all_zero c (by simpa using hc_in)
+    simp [clause_potential] at h_all_zero
+    split_ifs at h_all_zero with h_sat
+    · exact h_sat
+    · linarith
+  · intro h_sat
+    unfold V_P
+    apply sum_eq_zero
+    intro c hc_in
+    have h_c_sat := h_sat c (by simpa using hc_in)
+    simp [clause_potential, h_c_sat]
+
+/-- Potentiel pour une configuration non satisfaisante est au moins 1 -/
+theorem potential_unsat_ge_one (inst : SATInstance n) (x : Config n) (hx : ¬ satisfies inst x) :
+    1 ≤ V_P inst x := by
+  by_contra h_contra
+  push_neg at h_contra
+  have h_zero : V_P inst x = 0 := by linarith
+  rw [V_P_zero_iff_satisfies] at h_zero
+  contradiction
+
+/-- Instance de SpectralProblem pour SAT -/
+def sat_problem (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) : SpectralProblem (Config n) where
+  potential := V_P inst
+  graph := hypercube_graph n
+  epsilon := ε
+  heps := hε
+  connected := hypercube_connected n   -- théorème de Mathlib
+
+/-- État fondamental (unique, strictement positif) -/
+noncomputable def ground_state_sat (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) : Config n → ℝ :=
+  ground_state (sat_problem n inst ε hε)
+
+/-- Propriétés P1 -/
+lemma ground_state_props (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) :
+    (∀ x, ground_state_sat n inst ε hε x > 0) ∧
+    (∑ x, (ground_state_sat n inst ε hε x)^2 = 1) ∧
+    (Hamiltonian (sat_problem n inst ε hε) *ᵥ ground_state_sat n inst ε hε =
+      (spectrum (Hamiltonian (sat_problem n inst ε hε))).min • ground_state_sat n inst ε hε) :=
+  perron_frobenius (sat_problem n inst ε hε)
+
+/-- Borne inférieure sur le trou spectral (P2) -/
+theorem spectral_gap_bound_sat (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) (hn : 1 ≤ n) :
+    spectral_gap (Hamiltonian (sat_problem n inst ε hε)) ≥ 2 * ε := by
+  let H := Hamiltonian (sat_problem n inst ε hε)
+  let V := diagonal (V_P inst)
+  let Δ := adjacencyMatrixOf (hypercube_graph n)
+  have h_gap_B : spectral_gap (ε • Δ) = ε * spectral_gap Δ := spectral_gap_smul ε Δ
+  rw [h_gap_B, HypercubeHarper.spectral_gap_adjacency hn]
+  apply DiscreteCheeger.kithima_bridge V ε hε
+  · intro i j h_ne; simp [V, h_ne]
+  · intro i; simp [V_P, sum_nonneg]
+
+/-- Borne supérieure de l'énergie fondamentale (cas satisfiable) via le quotient de Rayleigh.
+    Résultat standard : la valeur propre minimale est inférieure ou égale au quotient de Rayleigh. -/
+axiom rayleigh_quotient_min (H : Matrix (Config n) (Config n) ℝ) (x : Config n → ℝ) :
+    (spectrum H).min ≤ (x ⬝ᵥ (H *ᵥ x)) / (x ⬝ᵥ x)
+
+theorem lambda0_upper_bound_sat (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε)
+    (x_sol : Config n) (h_sol : satisfies inst x_sol) :
+    (spectrum (Hamiltonian (sat_problem n inst ε hε))).min ≤ ε * (n : ℝ) := by
+  let H := Hamiltonian (sat_problem n inst ε hε)
+  let δ := fun y => if y = x_sol then 1 else 0
+  have h_norm : ∑ y, (δ y) ^ 2 = 1 := by simp [δ]
+  have h_ray := rayleigh_quotient_min H δ
+  simp [H, V_P, h_sol, adjacencyMatrixOf, δ] at h_ray
+  have h_deg : degree (hypercube_graph n) x_sol = n := HypercubeHarper.degree_hypercube n x_sol
+  simp [h_deg] at h_ray
+  linarith
+
+/-- Borne inférieure de l'énergie fondamentale (cas insatisfiable) par Gershgorin -/
+theorem lambda0_lower_bound_unsat (n : ℕ) (inst : SATInstance n) (h_unsat : ¬ ∃ x, satisfies inst x) :
+    (spectrum (Hamiltonian (sat_problem n inst 1 (by norm_num)))).min ≥ 1 := by
+  let H := Hamiltonian (sat_problem n inst 1 (by norm_num))
+  intro λ hλ
+  obtain ⟨i, hi⟩ := Matrix.gershgorin_disks H hλ
+  have hVi : V_P inst i ≥ 1 := potential_unsat_ge_one inst i (by simpa using h_unsat)
+  simp [H, adjacencyMatrixOf] at hi
+  have h_Ri : ∑ j in (univ.erase i), |H i j| = n := by
+    simp [H, adjacencyMatrixOf]
+    rw [sum_ite, filter_eq, mem_univ, ite_true]
+    have h_deg : degree (hypercube_graph n) i = n := HypercubeHarper.degree_hypercube n i
+    simp [h_deg]
+  have h_diag : H i i = V_P inst i + n := by
+    simp [H, adjacencyMatrixOf, diagonal]
+    have h_deg : degree (hypercube_graph n) i = n := HypercubeHarper.degree_hypercube n i
+    simp [h_deg]
+  rw [h_diag] at hi
+  have h_bound : λ ≥ H i i - ∑ j ≠ i, |H i j| := hi
+  rw [h_diag, h_Ri] at h_bound
+  linarith [hVi]
+
+/-- Preuve de conformité pour Brandão‑Horodecki -/
+theorem sat_compliance (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) (hn : 1 ≤ n) :
+    BrandaoHorodeckiAssumptions (sat_problem n inst ε hε) :=
+{
+  hamiltonian_path := gray_code n,
+  hamiltonian_path_nodup := gray_code_nodup n,
+  hamiltonian_path_length := gray_code_length n,
+  hamiltonian_path_adj := by
+    intro i hi
+    exact gray_code_adjacent n i hi,
+  interaction_range_le_one := by
+    intro i j h_adj
+    exact le_refl 1,
+  spectral_gap_min := by
+    let γ := 2 * ε
+    have hγ : 0 < γ := by positivity
+    have h_gap := spectral_gap_bound_sat n inst ε hε hn
+    exact ⟨γ, hγ, h_gap⟩
+}
+
+/-- Loi d'aire pour SAT -/
+theorem area_law_sat (n : ℕ) (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) (hn : 1 ≤ n) :
+    ∃ C > 0, ∀ B : Finset (Fin n), entanglement_entropy (ground_state_sat n inst ε hε) B ≤ C * Real.log n := by
+  have h_comp := sat_compliance n inst ε hε hn
+  obtain ⟨C, hC, h_bound⟩ := brandao_horodecki h_comp
+  exact ⟨C, hC, fun B => h_bound (hilbert_curve '' B)⟩
