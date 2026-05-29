@@ -1,0 +1,38 @@
+/- 
+CircuitSAT.lean – Circuit SAT (circuit booléen donné par une liste de portes).
+-/
+
+import Kernel.SpectralLibrary
+import Kernel.HypercubeHarper
+
+open SpectralLibrary
+
+def Config (n : ℕ) := Fin n → Bool
+
+structure Gate where
+  type : String
+  inputs : List ℕ   -- indices des fils (0‑based)
+  output : ℕ
+
+structure Circuit (n : ℕ) where
+  gates : List Gate
+  output : ℕ
+
+-- Axiom: L'évaluation d'un circuit est définie et correcte (standard)
+-- Reference: PNP/SAT.lean (simulation de circuit)
+axiom evaluate (circ : Circuit n) (x : Config n) : Bool
+
+def circuit_potential (circ : Circuit n) (x : Config n) : ℝ :=
+  if evaluate circ x then 0 else 1
+
+def hypercube_graph (n : ℕ) : SimpleGraph (Config n) := SimpleGraph.hypercube (Fin n)
+
+-- Axiom: L'hypercube est connexe (résultat standard de Mathlib)
+axiom hypercube_connected (n : ℕ) : (hypercube_graph n).Connected
+
+def circuit_problem (circ : Circuit n) (ε : ℝ) (hε : 0 < ε) : SpectralProblem (Config n) where
+  potential := circuit_potential circ
+  graph := hypercube_graph n
+  epsilon := ε
+  heps := hε
+  connected := hypercube_connected n

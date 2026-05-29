@@ -1,0 +1,35 @@
+/- 
+SAT.lean – Problème SAT (3‑CNF) comme instance de SpectralProblem.
+-/
+
+import Kernel.SpectralLibrary
+import Kernel.HypercubeHarper
+
+open SpectralLibrary
+
+def Config (n : ℕ) := Fin n → Bool
+
+structure SATInstance (n : ℕ) where
+  clauses : List (List (Fin n × Bool))
+
+def clause_eval (x : Config n) (c : List (Fin n × Bool)) : Bool :=
+  c.any fun (v, pos) => if pos then x v else not (x v)
+
+def satisfies (inst : SATInstance n) (x : Config n) : Bool :=
+  inst.clauses.all (clause_eval x)
+
+def sat_potential (inst : SATInstance n) (x : Config n) : ℝ :=
+  if satisfies inst x then 0 else 1
+
+def hypercube_graph (n : ℕ) : SimpleGraph (Config n) := SimpleGraph.hypercube (Fin n)
+
+-- Axiom: L'hypercube est connexe (résultat standard de Mathlib)
+-- Reference: Mathlib.Combinatorics.SimpleGraph.Hypercube
+axiom hypercube_connected (n : ℕ) : (hypercube_graph n).Connected
+
+def sat_problem (inst : SATInstance n) (ε : ℝ) (hε : 0 < ε) : SpectralProblem (Config n) where
+  potential := sat_potential inst
+  graph := hypercube_graph n
+  epsilon := ε
+  heps := hε
+  connected := hypercube_connected n

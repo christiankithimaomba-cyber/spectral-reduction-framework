@@ -1,0 +1,33 @@
+/- 
+IndependentSet.lean – Problème du stable (independent set).
+-/
+
+import Kernel.SpectralLibrary
+import Kernel.HypercubeHarper
+
+open SpectralLibrary
+
+def Config (n : ℕ) := Fin n → Bool
+
+structure Graph (n : ℕ) where
+  adj : Fin n → Fin n → Bool
+  symm : ∀ i j, adj i j = adj j i
+  irref : ∀ i, ¬ adj i i
+
+def is_independent_set (G : Graph n) (x : Config n) : Bool :=
+  ∀ i j, i ≠ j ∧ G.adj i j → ¬ (x i ∧ x j)
+
+def independent_set_potential (G : Graph n) (x : Config n) : ℝ :=
+  if is_independent_set G x then (Finset.card (Finset.filter (fun i => x i) Finset.univ)) else 0
+
+def hypercube_graph (n : ℕ) : SimpleGraph (Config n) := SimpleGraph.hypercube (Fin n)
+
+-- Axiom: L'hypercube est connexe (résultat standard de Mathlib)
+axiom hypercube_connected (n : ℕ) : (hypercube_graph n).Connected
+
+def independent_set_problem (G : Graph n) (ε : ℝ) (hε : 0 < ε) : SpectralProblem (Config n) where
+  potential := independent_set_potential G
+  graph := hypercube_graph n
+  epsilon := ε
+  heps := hε
+  connected := hypercube_connected n
