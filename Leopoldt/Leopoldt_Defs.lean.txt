@@ -1,0 +1,17 @@
+/-
+LeopoldtDefs.lean – Basic definitions for the Leopoldt conjecture.
+-/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.NumberTheory.NumberField.Basic
+import Mathlib.NumberTheory.PAdicPAdics
+
+open NumberField
+
+/-- The p-adic regulator of a number field K. This is a well-defined real number.
+    We do not construct it explicitly; we only need its existence. -/
+axiom pAdicRegulator (K : NumberField) (p : ℕ) [Fact p.Prime] : ℝ
+
+/-- Leopoldt conjecture: for every number field K and every prime p, the p-adic regulator is non-zero. -/
+def leopoldt_conjecture : Prop :=
+  ∀ (K : NumberField) (p : ℕ) [Fact p.Prime], pAdicRegulator K p ≠ 0

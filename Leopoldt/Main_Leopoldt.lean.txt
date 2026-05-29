@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXIX.
+-/
+
+import .LeopoldtSynthesis
+
+open SpectralLibrary
+
+#check leopoldt_conjecture
+
+-- List all axioms used
+#print axioms leopoldt_conjecture
