@@ -1,0 +1,24 @@
+/-
+AbcHamiltonian.lean – Hamiltonien spectral pour l'instance SAT.
+-/
+
+import .AbcSAT
+import Kernel.SpectralLibrary
+
+open SpectralLibrary
+
+variable (N0 : ℕ) (hN0 : N0 > 0)
+
+def Φ : SATInstance := abc_SAT N0
+def M : ℕ := Φ.numVars
+def Config := Fin M → Bool
+
+def V (σ : Config) : ℝ :=
+  if satisfies Φ σ then 0 else M^2
+
+def Δ : Matrix Config Config ℝ := adjacencyMatrixOf (hypercube_graph M)
+
+def H_abc : Matrix Config Config ℝ := diagonal V + Δ
+
+lemma H_irreducible : Irreducible H_abc :=
+  matrix_is_irreducible_of_adjacency_graph (hypercube_connected M)
