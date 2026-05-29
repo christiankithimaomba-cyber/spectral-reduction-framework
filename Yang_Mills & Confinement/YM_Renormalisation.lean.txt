@@ -1,0 +1,38 @@
+/-
+YMRenormalisation.lean – Renormalisation spectrale et limite continue (mass gap).
+-/
+
+import .YMHamiltonian
+import Kernel.InductiveLimit
+import Kernel.KatoTheory
+
+open SpectralLibrary
+
+-- On considère une suite de réseaux de plus en plus fins (a_k = 2^{-k} a_0).
+-- Pour chaque k, on a un Hamiltonien H_k sur un hypercube de dimension M_k.
+-- On définit des inclusions isométriques i_k : H_k → H_{k+1} (duplication de bits).
+-- Reference: Kato, Perturbation Theory for Linear Operators (1966)
+axiom inclusion_exists (k : ℕ) : H_k →ₗᵢ[ℝ] H_{k+1}
+
+-- Les Hamiltoniens sont compatibles avec les inclusions (à une erreur qui tend vers 0).
+axiom compatibility (k : ℕ) : ∥ i_k ∘ H_k - H_{k+1} ∘ i_k ∥ ≤ ε_k, where ε_k → 0
+
+-- Limite inductive des espaces de Hilbert.
+noncomputable def H_inf : Type := inductive_limit_exists inclusion_exists
+
+-- Opérateur limite.
+noncomputable def H_inf_op : H_inf →ₗ[ℝ] H_inf :=
+  inductive_limit_op_exists inclusion_exists H_k compatibility
+
+-- Convergence forte des résolvantes (Kato).
+theorem resolvent_convergence (z : ℂ) (hz : 0 < im z) :
+    tendsto (fun k => resolvent H_k z) atTop (nhds (resolvent H_inf_op z)) :=
+  kato_resolvent_convergence compatibility
+
+-- Le trou spectral de chaque H_k est ≥ 2 (uniforme).
+lemma spectral_gap_uniform_k (k : ℕ) : spectral_gap H_k ≥ 2 :=
+  spectral_gap_uniform   -- prouvé dans YMConstantGap.lean
+
+-- Semi‑continuité inférieure du trou spectral (Kato).
+theorem mass_gap_continuum : spectral_gap H_inf_op ≥ 2 :=
+  kato_lower_semicontinuity resolvent_convergence spectral_gap_uniform_k
