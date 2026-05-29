@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXI (Vizing's conjecture).
+-/
+
+import .VizingDecision
+
+open SpectralLibrary
+
+#check vizing_conjecture
+
+-- List axioms used
+#print axioms vizing_conjecture
