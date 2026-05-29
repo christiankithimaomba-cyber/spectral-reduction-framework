@@ -1,0 +1,24 @@
+/- 
+MainClique.lean – Fichier d'intégration pour le problème de la clique.
+-/
+
+import Clique
+import CliqueExtraction
+
+open SpectralLibrary
+
+def solve_clique (G : Graph n) : Option (Config n) :=
+  let χ := required_bond_dim n
+  let T := required_iterations n
+  let ψ := power_iteration G 1 (by norm_num) T χ
+  extract_max_clique ψ
+
+-- Théorème final : l'algorithme retourne une clique maximale.
+theorem solve_clique_correct (G : Graph n) :
+    let x := solve_clique G
+    x.isSome ∧ is_clique G x.get ∧ clique_size x.get = maximum_clique_size G :=
+  by
+    -- Appliquer le théorème d'extraction
+    have h_correct := clique_extraction_correct G 1 (by norm_num) (required_bond_dim n) (required_iterations n) (by linarith) (by linarith)
+    simp [solve_clique, power_iteration, extract_max_clique] at h_correct
+    exact h_correct
