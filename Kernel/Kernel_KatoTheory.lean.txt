@@ -1,0 +1,11 @@
+import Mathlib.Topology.Limits.Basic
+import Mathlib.Analysis.NormedSpace.Basic
+
+/-- Lower semicontinuity of the spectral gap under strong resolvent convergence (Kato).
+    Reference: Kato, T. (1966). Perturbation Theory for Linear Operators. Springer. -/
+axiom kato_lower_semicontinuity {E : Type*} [InnerProductSpace ℝ E]
+    {T_n : ℕ → (E →ₗ[ℝ] E)} [∀ n, IsSelfAdjoint (T_n n)]
+    {T : E →ₗ[ℝ] E} [IsSelfAdjoint T]
+    (h_conv : ∀ z : ℂ, 0 < im z → tendsto (fun n => resolvent (T_n n) z) atTop (nhds (resolvent T z)))
+    (m : ℝ) (hm : 0 < m) (h_gap_n : ∀ n, spectral_gap (T_n n) ≥ m) :
+    spectral_gap T ≥ m
