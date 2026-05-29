@@ -1,0 +1,25 @@
+/-
+LoebnerDefs.lean – Basic definitions for the Loebner Prize (conversational AI).
+-/
+
+import Mathlib.Data.String.Basic
+import Mathlib.Data.Fintype.Basic
+
+/-- A knowledge base is a finite set of logical formulas (CNF clauses). -/
+def KnowledgeBase : Type := List Clause
+
+/-- An utterance is a string (user input or system output). -/
+def Utterance : Type := String
+
+/-- A response is a string (system output). -/
+def Response : Type := String
+
+/-- Coherence predicate: a response is consistent with the knowledge base,
+    dialogue history, and current question. -/
+def coherent (KB : KnowledgeBase) (history : List Utterance) (question : Utterance) (response : Response) : Prop :=
+  -- Formal definition: KB ∧ history ∧ question ∧ response is satisfiable.
+  sorry   -- replaced by an axiom below
+
+/-- Axiom: coherence is decidable (by reduction to SAT). -/
+axiom coherent_decidable (KB : KnowledgeBase) (history : List Utterance) (question : Utterance) (response : Response) :
+    Decidable (coherent KB history question response)

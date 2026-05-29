@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXX.
+-/
+
+import .LoebnerSynthesis
+
+open SpectralLibrary
+
+#check loebner_prize_solved
+
+-- List all axioms used
+#print axioms loebner_prize_solved

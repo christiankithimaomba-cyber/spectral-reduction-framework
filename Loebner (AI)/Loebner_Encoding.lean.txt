@@ -1,0 +1,47 @@
+/-
+LoebnerEncoding.lean – Encoding of responses as binary strings and SAT instance for coherence.
+-/
+
+import .LoebnerDefs
+import PNP.SAT
+
+open SAT
+
+variable (KB : KnowledgeBase) (history : List Utterance) (question : Utterance)
+
+/-- Maximum response length (in characters). -/
+def max_response_len : ℕ := 100
+
+/-- Vocabulary size (number of possible characters). -/
+def vocab_size : ℕ := 128   -- ASCII printable
+
+/-- Number of bits to encode a character. -/
+def bits_per_char : ℕ := Nat.log2 vocab_size + 1
+
+/-- Total number of bits for a response. -/
+def response_bits : ℕ := max_response_len * bits_per_char
+
+/-- Decode a bit string into a response string. -/
+axiom decode_response (bits : Fin response_bits → Bool) : Response
+
+/-- Encode a response into a bit string. -/
+axiom encode_response (r : Response) : Fin response_bits → Bool
+
+/-- Circuit that checks coherence of a response given the bits. -/
+axiom coherence_circuit : Circuit (Fin response_bits → Bool)
+
+/-- Correctness of the coherence circuit. -/
+axiom coherence_circuit_correct (bits : Fin response_bits → Bool) :
+    (coherence_circuit).eval bits = true ↔ coherent KB history question (decode_response bits)
+
+/-- SAT instance for existence of a coherent response. -/
+def coherence_SAT : SATInstance :=
+  let C := coherence_circuit
+  tseitin C
+
+/-- Satisfiability of the SAT instance iff there exists a coherent response. -/
+theorem coherence_SAT_correct :
+    Satisfiable coherence_SAT ↔ ∃ r : Response, coherent KB history question r :=
+  by
+    rw [tseitin_correct]
+    exact coherence_circuit_correct

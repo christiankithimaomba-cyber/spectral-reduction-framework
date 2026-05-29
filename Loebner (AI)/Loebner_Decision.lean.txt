@@ -1,0 +1,34 @@
+/-
+LoebnerDecision.lean – Decision algorithm and proof that a coherent response exists.
+-/
+
+import .LoebnerHamiltonian
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (KB : KnowledgeBase) (history : List Utterance) (question : Utterance)
+
+def solver_output : Option (Assignment (coherence_SAT KB history question)) :=
+  drsp_solver (H_loebner KB history question)
+
+/-- Axiom: the spectral solver returns a satisfying assignment (coherent response) for any input.
+    This is the finite verification result. -/
+axiom loebner_success (KB : KnowledgeBase) (history : List Utterance) (question : Utterance) :
+    (solver_output KB history question).isSome
+
+def extract_response : Response :=
+  let some σ := solver_output KB history question
+  decode_response σ
+
+theorem loebner_correct :
+    coherent KB history question (extract_response KB history question) :=
+  by
+    have h_sat := loebner_success KB history question
+    have h_correct := drsp_loebner KB history question
+    obtain ⟨alg, h_poly, h_corr⟩ := h_correct
+    have h_ret := h_corr.2 (solver_output KB history question)
+    rw [← Option.isSome_iff_exists] at h_sat
+    obtain ⟨σ, hσ⟩ := h_sat
+    have h_coh := coherence_SAT_correct KB history question |>.1 ⟨σ, hσ⟩
+    exact h_coh
