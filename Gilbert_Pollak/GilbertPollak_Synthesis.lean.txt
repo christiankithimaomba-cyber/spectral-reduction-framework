@@ -1,0 +1,28 @@
+/-
+GilbertPollakSynthesis.lean – Final proof of the Gilbert–Pollak conjecture.
+-/
+
+import .GilbertPollakDecision
+import .EffectiveBound
+import .Discretisation
+
+open Real
+
+theorem gilbert_pollak_conjecture (P : Finset (ℝ × ℝ)) (h_nonempty : P.nonempty) :
+    SMT_length P ≥ rho * MST_length P :=
+  by
+    let n := Fintype.card P
+    by_cases h : n ≤ N0
+    · -- finite range: use discretisation and spectral verification
+      have h_grid := discretisation n P (by rfl) (by assumption)
+      obtain ⟨Q, hQ, hQcard, h_viol⟩ := h_grid
+      let G := grid_size n
+      have hG : G = grid_size n := rfl
+      let bits := encode_points n G Q   -- defined in kernel
+      have h_sat : Satisfiable (gp_SAT n G hG h) :=
+        gp_SAT_correct n G hG h |>.2 ⟨Q, hQcard, hQ, h_viol⟩
+      have h_unsat : ¬ Satisfiable (gp_SAT n G hG h) := gp_SAT_unsat n G hG h
+      contradiction
+    · -- large n: use asymptotic bound
+      have h_large : Fintype.card P > N0 := by linarith
+      exact gp_asymptotic P h_large

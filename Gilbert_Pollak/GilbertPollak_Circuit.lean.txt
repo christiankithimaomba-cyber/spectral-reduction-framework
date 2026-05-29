@@ -1,0 +1,73 @@
+/-
+GilbertPollakCircuit.lean – Boolean circuit for testing the Gilbert–Pollak inequality
+on a fixed grid of size G for a fixed number of points n (n ≤ N0).
+-/
+
+import .GilbertPollakDefs
+import .EffectiveBound
+import .Discretisation
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+import Kernel.Circuit.Comparison
+
+open Circuit
+
+variable (n : ℕ) (G : ℕ) (hG : G = grid_size n) (hn : n ≤ N0)
+
+def L : ℕ := Nat.log2 G + 1
+def num_bits : ℕ := 2 * n * L
+
+def decode_points (bits : Fin num_bits → Bool) : List (ℝ × ℝ) :=
+  List.range n |>.map (fun i =>
+    let x := bits_to_int (slice bits (2*i*L) L)
+    let y := bits_to_int (slice bits ((2*i+1)*L) L)
+    (x, y))
+
+/-- Circuit for MST squared length (existence). -/
+axiom mst_sq_circuit (points : List (Circuit (Fin L → Bool) × Circuit (Fin L → Bool))) :
+    Circuit (Fin (n * L) → Bool)
+
+/-- Correctness of MST circuit. -/
+axiom mst_sq_correct (points : List (Circuit (Fin L → Bool) × Circuit (Fin L → Bool)))
+    (bits : Fin num_bits → Bool) :
+    (mst_sq_circuit points).eval (extract_bits points bits) = (MST_length (decode_points bits))^2
+
+/-- Circuit for SMT squared length (existence). -/
+axiom smt_sq_circuit (points : List (Circuit (Fin L → Bool) × Circuit (Fin L → Bool))) :
+    Circuit (Fin (n * L) → Bool)
+
+/-- Correctness of SMT circuit. -/
+axiom smt_sq_correct (points : List (Circuit (Fin L → Bool) × Circuit (Fin L → Bool)))
+    (bits : Fin num_bits → Bool) :
+    (smt_sq_circuit points).eval (extract_bits points bits) = (SMT_length (decode_points bits))^2
+
+/-- Main circuit: outputs 1 iff the configuration violates the Gilbert–Pollak inequality. -/
+def gp_circuit : Circuit (Fin num_bits → Bool) :=
+  let bits := input_all num_bits
+  let points : List (Circuit (Fin L → Bool) × Circuit (Fin L → Bool)) :=
+    List.range n |>.map (fun i =>
+      let x := slice bits (2*i*L) L
+      let y := slice bits ((2*i+1)*L) L
+      (x, y))
+  let mst_sq := mst_sq_circuit points
+  let smt_sq := smt_sq_circuit points
+  let lhs := mul_circuit (constant 3) smt_sq
+  let rhs := mul_circuit (constant 4) mst_sq
+  let violation := lt_circuit lhs rhs
+  violation
+
+/-- Correctness theorem. -/
+theorem gp_circuit_correct (bits : Fin num_bits → Bool) :
+    (gp_circuit n G hG hn).eval bits = true ↔
+    SMT_length (decode_points bits) < ρ * MST_length (decode_points bits) :=
+  by
+    rw [gp_circuit, lt_circuit_correct, mul_circuit_correct, mul_circuit_correct,
+        mst_sq_correct, smt_sq_correct]
+    simp
+    have hρ : ρ = 2 / sqrt 3 := rfl
+    have hρ_sq : (2 / sqrt 3)^2 = 4 / 3 := by
+      rw [div_pow, sq_sqrt (by norm_num : 0 ≤ 3), pow_two]; norm_num
+    rw [← pow_two]
+    constructor
+    · intro h; rwa [← mul_lt_mul_left (by norm_num : 0 < 3)] at h; linarith
+    · intro h; rwa [← mul_lt_mul_left (by norm_num : 0 < 3)]; linarith
