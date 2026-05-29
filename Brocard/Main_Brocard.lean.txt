@@ -1,0 +1,9 @@
+/- XVII_MainBrocard.lean - Fichier principal. -/
+
+import XVII_BrocardFinal
+
+#eval "Brocard's problem: all modules loaded."
+
+#check brocard_problem
+
+#print axioms brocard_problem
