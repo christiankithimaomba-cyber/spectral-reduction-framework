@@ -1,0 +1,13 @@
+/- 
+MainLegendre.lean – Fichier d’intégration principal.
+-/
+
+import .LegendreSynthesis
+
+#eval "Legendre conjecture: all modules loaded."
+
+-- Vérification du théorème final
+#check legendre_conjecture_proved
+
+-- Affichage des axiomes utilisés
+#print axioms legendre_conjecture_proved
