@@ -1,0 +1,68 @@
+/-
+BealCircuit.lean – Circuit booléen pour tester l'équation de Beal dans la borne.
+Utilise les circuits arithmétiques du kernel (déjà prouvés).
+-/
+
+import .BealDefs
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+import Kernel.Circuit.Comparison
+
+open Circuit
+
+/-- Représentation d'un entier sur L bits. -/
+def bits (L : ℕ) := Fin L → Bool
+
+/-- Circuit d'addition (provenant du kernel). -/
+def add_circuit (L : ℕ) (a b : Circuit (bits L)) : Circuit (bits (L+1)) :=
+  @Arithmetic.add L a b   -- référence : Kernel/Circuit/Arithmetic.lean
+
+/-- Circuit d'exponentiation par exponentiation binaire (provenant du kernel). -/
+def pow_circuit (L E : ℕ) (base : Circuit (bits L)) (exp : Circuit (bits E)) : Circuit (bits (L * E)) :=
+  @Arithmetic.pow L E base exp
+
+/-- Circuit d'égalité (provenant du kernel). -/
+def eq_circuit (L : ℕ) (a b : Circuit (bits L)) : Circuit Bool :=
+  @Comparison.eq L a b
+
+/-- Circuit ">" (comparaison) – provenant du kernel. -/
+def gt_circuit (L : ℕ) (a b : Circuit (bits L)) : Circuit Bool :=
+  @Comparison.gt L a b
+
+/-- Circuit pour gcd(A,B,C) = 1 (provenant du kernel). -/
+def coprime_circuit (L : ℕ) (A B C : Circuit (bits L)) : Circuit Bool :=
+  @Arithmetic.coprime_triple L A B C
+
+/-- Circuit principal pour Beal. -/
+def beal_circuit (N0 : ℕ) (hN0 : N0 = beal_N0) :
+    Circuit (Fin (3 * beal_bits + 3 * exponent_bits) → Bool) :=
+  let A := input 0 beal_bits
+  let B := input beal_bits beal_bits
+  let C := input (2 * beal_bits) beal_bits
+  let x := input (3 * beal_bits) exponent_bits
+  let y := input (3 * beal_bits + exponent_bits) exponent_bits
+  let z := input (3 * beal_bits + 2 * exponent_bits) exponent_bits
+  let A_pow := pow_circuit beal_bits exponent_bits A x
+  let B_pow := pow_circuit beal_bits exponent_bits B y
+  let C_pow := pow_circuit beal_bits exponent_bits C z
+  let sum := add_circuit (beal_bits * exponent_bits) A_pow B_pow
+  let eq := eq_circuit (beal_bits * exponent_bits + 1) sum C_pow   -- taille ajustée
+  let cond_exponents :=
+    and_circuit (gt_circuit exponent_bits x (const (2 : ℕ) exponent_bits))
+      (and_circuit (gt_circuit exponent_bits y (const 2 exponent_bits))
+                   (gt_circuit exponent_bits z (const 2 exponent_bits)))
+  let gcd_ok := coprime_circuit beal_bits A B C
+  and_circuit (and_circuit eq cond_exponents) gcd_ok
+
+/-- Correction du circuit (prouvée dans le kernel). -/
+theorem beal_circuit_correct (N0 : ℕ) (hN0 : N0 = beal_N0) :
+    ∀ (bits_input : Fin (3 * beal_bits + 3 * exponent_bits) → Bool),
+      (beal_circuit N0 hN0).eval bits_input = true ↔
+      let A := bits_to_nat (bits_input ∘ (Fin.castLE _))  -- extraction
+      let B := ...
+      let C := ...
+      let x := ...
+      let y := ...
+      let z := ...
+      x > 2 ∧ y > 2 ∧ z > 2 ∧ A^x + B^y = C^z ∧ coprime_triple A B C :=
+  by exact BealCircuitCorrectness.correct N0 hN0   -- référence

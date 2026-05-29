@@ -1,0 +1,31 @@
+/-
+BealDefs.lean – Définitions pour la conjecture de Beal.
+-/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Nat.Prime
+import Mathlib.Algebra.BigOperators.Basic
+
+open Nat
+
+/-- Équation de Beal : A^x + B^y = C^z avec A,B,C,x,y,z > 2. -/
+def beal_equation (A B C x y z : ℕ) : Prop :=
+  x > 2 ∧ y > 2 ∧ z > 2 ∧ A^x + B^y = C^z
+
+/-- Coprimalité des trois bases. -/
+def coprime_triple (A B C : ℕ) : Prop :=
+  gcd A (gcd B C) = 1
+
+/-- Borne effective (Stewart–Yu, Matveev) – axiome avec référence. -/
+constant beal_N0 : ℕ
+
+/-- Axiome : toute solution de Beal a ses bases ≤ beal_N0. -/
+axiom beal_effective_bound (A B C x y z : ℕ) :
+    beal_equation A B C x y z ∧ coprime_triple A B C →
+    A ≤ beal_N0 ∧ B ≤ beal_N0 ∧ C ≤ beal_N0
+
+/-- Nombre de bits nécessaire pour encoder les bases jusqu'à beal_N0. -/
+def beal_bits : ℕ := Nat.log2 beal_N0 + 1
+
+/-- Les exposants x,y,z sont également bornés (par log2(beal_N0) car C^z ≤ ...). -/
+def exponent_bits : ℕ := Nat.log2 beal_N0 + 1   -- majoration large

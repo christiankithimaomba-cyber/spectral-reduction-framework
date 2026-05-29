@@ -1,0 +1,23 @@
+/-
+BealSAT.lean – Réduction du circuit à une instance 3‑SAT.
+-/
+
+import .BealCircuit
+import Kernel.Tseitin
+
+open Circuit
+
+/-- Instance SAT pour Beal. -/
+def beal_SAT : SATInstance :=
+  tseitin (beal_circuit beal_N0 rfl)
+
+/-- Satisfiabilité ↔ existence d'un contre‑exemple dans la borne. -/
+theorem beal_SAT_correct :
+    Satisfiable beal_SAT ↔
+    ∃ A B C x y z : ℕ,
+      A ≤ beal_N0 ∧ B ≤ beal_N0 ∧ C ≤ beal_N0 ∧
+      x > 2 ∧ y > 2 ∧ z > 2 ∧ A^x + B^y = C^z ∧ coprime_triple A B C :=
+  by
+    -- Preuve standard : Tseitin transformation correctness + circuit correctness
+    rw [tseitin_correct (beal_circuit beal_N0 rfl)]
+    apply beal_circuit_correct beal_N0 rfl
