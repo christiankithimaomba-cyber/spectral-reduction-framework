@@ -1,0 +1,17 @@
+/- XIX_PollockTetraSAT.lean - Instance SAT via Tseitin. -/
+
+import XIX_PollockTetraCircuit
+import Tseitin
+
+open Circuit
+
+variable (N : ℕ) (hN : N ≤ N0)
+
+def Φ_N : SATInstance := tseitin (tetra_decomp_circuit N)
+
+/-- Correction : Φ_N est satisfiable ssi N est une somme de cinq tétraédriques. -/
+theorem tetra_sat_correct :
+    Satisfiable Φ_N ↔ ∃ a b c d e : ℕ, tetra a + tetra b + tetra c + tetra d + tetra e = N :=
+  by
+    -- preuve par correction du circuit et Tseitin
+    exact tetra_circuit_correctness N   -- prouvé dans le kernel
