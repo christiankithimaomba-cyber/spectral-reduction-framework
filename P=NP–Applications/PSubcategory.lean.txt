@@ -1,0 +1,19 @@
+/- 
+PSubcategory.lean – Sous‑catégorie des objets P.
+-/
+
+import SpecCategory
+
+/-- Un objet P : un objet spectral avec un extracteur polynomial. -/
+structure PObject extends SpecObject where
+  extractor : V → Option V
+  extractor_poly : ∃ p : ℕ → ℕ, ∀ x, time_to_compute (extractor x) (|x|) ≤ p (|x|)
+  extractor_correct : ∀ x, (∃ y, is_solution y) → (extractor x).isSome ∧ is_solution (extractor x).get
+
+/-- Les morphismes entre objets P sont ceux de Spec qui préservent l'extractibilité. -/
+def PMorphism (X Y : PObject) := SpecMorphism X.toSpecObject Y.toSpecObject
+
+instance : Category PObject where
+  Hom := PMorphism
+  id X := ⟨SpecMorphism.id X.toSpecObject⟩
+  comp f g := ⟨SpecMorphism.comp f.1 g.1⟩
