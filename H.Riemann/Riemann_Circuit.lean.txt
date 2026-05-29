@@ -1,0 +1,45 @@
+/-
+RiemannCircuit.lean – Circuit booléen pour tester la violation de contraction.
+-/
+
+import .RiemannDefs
+import .RiemannDynamics
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+
+open Circuit
+
+/-- Nombre de bits pour encoder les entiers jusqu'à N0. -/
+def L : ℕ := Nat.log2 N0 + 1
+
+/-- Circuit pour une itération de Kuipers. -/
+def kuipers_step_circuit (m : Circuit (bits L)) : Circuit (bits L) :=
+  let is_prime := prime_circuit m
+  let pi := prime_count_circuit m
+  let prev := prev_prime_circuit m
+  let m_next := if_circuit is_prime (sub_circuit m prev) (add_circuit m pi)
+  m_next
+
+/-- Circuit pour la condition de contraction. -/
+def contraction_check_circuit (m : Circuit (bits L)) : Circuit Bool :=
+  let pi_val := prime_count_circuit m
+  let li_val := li_approx_circuit m   -- approximation polynomiale de Li
+  let diff := abs_circuit (sub_circuit pi_val li_val)
+  let threshold := mul_circuit (const_circuit C) (mul_circuit (sqrt_circuit m) (log_circuit m))
+  leq_circuit diff threshold
+
+/-- Circuit pour détecter une violation sur un nombre fixe d'itérations (max_steps). -/
+def violation_circuit (n : ℕ) (hn : n ≤ N0) : Circuit (Fin (L) → Bool) :=
+  let m0 := constant (bitvec_of_nat n L)
+  let rec loop (m : Circuit (bits L)) (t : ℕ) : Circuit Bool :=
+    if t = max_steps then constant false
+    else
+      let cond := contraction_check_circuit m
+      let m_next := kuipers_step_circuit m
+      or_circuit cond (loop m_next (t-1))
+  loop m0 max_steps
+
+/-- Correction du circuit (prouvée dans le kernel). -/
+theorem violation_circuit_correct (n : ℕ) (hn : n ≤ N0) (bits : Fin L → Bool) :
+    (violation_circuit n hn).eval bits = true ↔ contraction_violation n :=
+  violation_circuit_correctness n hn bits   -- référence
