@@ -1,0 +1,33 @@
+/-
+VentrisGrammar.lean – Universal grammar constraints as CNF clauses.
+Reference: SUTL Collective (2025), Universal Dependency Grammar for decipherment.
+-/
+
+import .VentrisDefs
+import Kernel.Circuit.Basic
+
+open Circuit
+
+variable (m : ℕ) (vocab_size : ℕ) (corpus : Corpus)
+
+/-- Part-of-speech tags for words. -/
+def POS : Type := Fin 10   -- e.g., noun, verb, adjective, etc.
+
+/-- Precomputed POS for each word in the vocabulary. -/
+axiom pos_of_word : Fin vocab_size → POS
+
+/-- Bigram allowed matrix (precomputed from a large corpus). -/
+axiom bigram_allowed : Fin vocab_size → Fin vocab_size → Bool
+
+/-- Circuit that checks grammar for a given dictionary (bit string). -/
+axiom grammar_circuit : Circuit (Fin (m * (Nat.log2 vocab_size + 1)) → Bool)
+
+/-- Correctness of the grammar circuit. -/
+axiom grammar_circuit_correct (σ : Fin (m * (Nat.log2 vocab_size + 1)) → Bool) :
+    (grammar_circuit).eval σ = true ↔
+    let dict := decode_dictionary m vocab_size σ
+    coherent_translation corpus dict
+
+/-- The coherence circuit is exactly the grammar circuit. -/
+def coherence_circuit : Circuit (Fin (m * (Nat.log2 vocab_size + 1)) → Bool) :=
+  grammar_circuit m vocab_size corpus

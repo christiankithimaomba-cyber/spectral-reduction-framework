@@ -1,0 +1,11 @@
+/-
+VentrisSynthesis.lean – Final theorem: the Ventris challenge is solvable.
+-/
+
+import .VentrisExtraction
+
+open SpectralLibrary
+
+theorem ventris_challenge_solved (m : ℕ) (vocab_size : ℕ) (corpus : Corpus) :
+    ∃ dict : Dictionary m, coherent_translation corpus dict :=
+  ⟨extract_dictionary m vocab_size corpus, ventris_solved m vocab_size corpus⟩

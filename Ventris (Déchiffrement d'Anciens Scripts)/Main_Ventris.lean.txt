@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXXIII.
+-/
+
+import .VentrisSynthesis
+
+open SpectralLibrary
+
+#check ventris_challenge_solved
+
+-- List all axioms used
+#print axioms ventris_challenge_solved
