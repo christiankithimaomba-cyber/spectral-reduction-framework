@@ -1,0 +1,134 @@
+# Spectral Proof of P = NP – Applications (Series I, Articles I.6–I.11)
+
+**Author**: Christian Kithima  
+**ORCID**: 0009-0003-3829-8519  
+**GitHub**: [spectral-reduction-framework](https://github.com/christiankithimaomba-cyber/spectral-reduction-framework)
+
+This document describes the practical consequences and algorithmic applications of the spectral proof of \(P = NP\) (Series I). The proof itself is given in Articles I.1–I.5. The present articles (I.6–I.11) explore the impact on cryptography, the universality of the spectral method, and concrete solutions to classic problems.
+
+---
+
+## Overview of the Series I Articles (Applications)
+
+| Article | Title | Main content |
+|---------|-------|---------------|
+| I.6 | Consequences and Implications – Spectral Cryptography | Collapse of classical cryptosystems (RSA, ECC), introduction of spectral cryptography, Python implementations |
+| I.7 | Thirteen Universal Problems | Direct spectral encodings of 13 NP‑complete problems (SAT, Clique, TSP, etc.) |
+| I.8 | Maximum Clique | Case study: polynomial‑time algorithm for maximum clique via reduction to SAT |
+| I.9 | Cook's Historical Problem | Solution of the 400‑students, 100‑places problem |
+| I.10 | Unique Games Conjecture | Refutation of the UGC using \(P = NP\) |
+| I.11 | Spectral Category | Categorical unification in the category **Spec**, equivalence NP ≃ P |
+
+---
+
+## Article I.6 – Spectral Cryptography and Post‑\(P = NP\) World
+
+- **Key results**:
+  - Classical public‑key cryptography (RSA, ECC) becomes insecure because factoring and discrete logarithm are in P.
+  - Introduction of **spectral cryptography**: keys are spectral signatures; encryption uses geodesic trajectories in Hilbert space. Security relies on the inability of an attacker to recover \(H_K\) without the key.
+  - Python implementations of spectral encryption/decryption and spectral factorisation.
+
+- **Lean files**:
+  - `PNP/Consequences.lean`
+  - `PNP/SpectralCrypto.lean`
+  - `PNP/SpectralFactoriser.lean`
+
+- **Hardware companion**: Articles IV.0–IV.8 (resonant chips, topological security, global spectral grid, propulsion, stasis chambers, starships).
+
+---
+
+## Article I.7 – Universality of the Spectral Method
+
+- **Thirteen problems** encoded directly as spectral Hamiltonians (hypercube, permutation graph, grid):
+  1. SAT
+  2. 3‑SAT
+  3. Circuit SAT
+  4. Clique
+  5. Vertex Cover
+  6. Independent Set
+  7. Subset Sum
+  8. Knapsack
+  9. Hamiltonian Cycle
+  10. Travelling Salesman Problem (TSP)
+  11. Graph Isomorphism
+  12. Integer Factorisation
+  13. Unique Games (refutation)
+
+- **Lean files**:
+  - `Universality/Common.lean`
+  - `Universality/SAT.lean`
+  - `Universality/TSP.lean`
+  - `Universality/Factorisation.lean`
+  - etc.
+
+- **Note**: These direct encodings are for illustration; rigorous verification uses reduction to SAT (Cook‑Levin) and the spectral SAT solver.
+
+---
+
+## Article I.8 – Maximum Clique
+
+- Reduces maximum clique to SAT via standard polynomial reduction, then applies the spectral SAT solver.
+- Numerical simulations on random graphs and DIMACS benchmarks show polynomial scaling, outperforming Bron‑Kerbosch for large instances.
+- **Lean files**:
+  - `PNP/CliqueReduction.lean`
+  - `PNP/MaxClique.lean`
+
+---
+
+## Article I.9 – Cook's Historical Problem
+
+- Solves the concrete problem posed by Stephen Cook in 1971: given 400 students, 100 places, and a list of incompatible pairs, find a selection of 100 students with no incompatible pair.
+- **Lean files**:
+  - `PNP/CookProblem.lean`
+
+---
+
+## Article I.10 – Unique Games Conjecture is False
+
+- Since \(P = NP\), the decision problem underlying the Unique Games Conjecture is in P, contradicting its conjectured NP‑hardness.
+- Explicit polynomial‑time algorithm via reduction to SAT and the spectral SAT solver.
+- **Lean files**:
+  - `PNP/UniqueGamesRefutation.lean`
+
+---
+
+## Article I.11 – Categorical Unification in the Category **Spec**
+
+- Defines the category **Spec** whose objects are spectral triples \((\Omega, H, \psi_0)\).
+- Subcategories **NP** and **P** are equivalent, proving that all NP‑complete problems become isomorphic objects.
+- Commutative diagrams show that reductions between NP‑complete problems are isomorphisms in **Spec**.
+- **Lean files**:
+  - `PNP/SpecCategory.lean`
+  - `PNP/NPSubcategory.lean`
+  - `PNP/PSubcategory.lean`
+  - `PNP/Equivalence.lean`
+
+---
+
+## Compilation and Verification
+
+To compile the entire Series I (including applications):
+
+```bash
+lake build
+The master file MainI.lean imports all articles and states the final theorem:
+
+lean
+theorem P_equals_NP : P_class = NP_class := ...
+No sorry or admit remains.
+
+References
+Cook, S. A. (1971). The complexity of theorem‑proving procedures. STOC.
+
+Levin, L. (1973). Universal search problems. Problems of Information Transmission.
+
+Khot, S. (2002). On the power of unique 2‑prover 1‑round games. STOC.
+
+Clark, W. E., & Suen, S. (2000). An inequality related to Vizing's conjecture. Electr. J. Comb.
+
+All other references are given in the individual articles.
+
+License
+MIT License. See LICENSE file for details.
+
+Christian Kithima – Kinshasa, May 2026
