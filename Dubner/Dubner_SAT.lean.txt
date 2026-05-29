@@ -1,0 +1,18 @@
+/-
+DubnerSAT.lean – Réduction à 3‑SAT via Tseitin.
+-/
+
+import .DubnerCircuit
+import Kernel.Tseitin
+
+open Circuit
+
+def dubner_SAT (n : ℕ) (hn : Even n ∧ n > 4) : SATInstance :=
+  tseitin (dubner_circuit n hn)
+
+theorem dubner_SAT_correct (n : ℕ) (hn : Even n ∧ n > 4) :
+    Satisfiable (dubner_SAT n hn) ↔
+    ∃ p q : ℕ, is_twin_prime p ∧ is_twin_prime q ∧ p + q = n :=
+  by
+    rw [tseitin_correct (dubner_circuit n hn)]
+    exact dubner_circuit_correct n hn
