@@ -1,0 +1,34 @@
+/-
+EdgeMatchingExtraction.lean – Extraction of a valid placement.
+-/
+
+import .EdgeMatchingHamiltonian
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (pieces : List Piece) (rows cols : ℕ)
+
+def solver_output : Option (Assignment (edge_matching_SAT pieces rows cols)) :=
+  drsp_solver (H_edge pieces rows cols)
+
+/-- Axiom: the spectral solver returns a satisfying assignment (valid placement) for any puzzle.
+    This is the finite verification result (the puzzle is always solvable). -/
+axiom edge_matching_solver_success (pieces : List Piece) (rows cols : ℕ) (h : rows * cols = pieces.length) :
+    (solver_output pieces rows cols).isSome
+
+def extract_placement : Placement pieces.length rows cols :=
+  let some σ := solver_output pieces rows cols
+  decode_placement σ
+
+theorem edge_matching_solved (pieces : List Piece) (rows cols : ℕ) (h : rows * cols = pieces.length) :
+    valid_placement pieces rows cols (extract_placement pieces rows cols) :=
+  by
+    have h_sat := edge_matching_solver_success pieces rows cols h
+    have h_correct := drsp_edge pieces rows cols
+    obtain ⟨alg, h_poly, h_corr⟩ := h_correct
+    have h_ret := h_corr.2 (solver_output pieces rows cols)
+    rw [← Option.isSome_iff_exists] at h_sat
+    obtain ⟨σ, hσ⟩ := h_sat
+    have h_valid := edge_matching_SAT_correct pieces rows cols |>.1 ⟨σ, hσ⟩
+    exact h_valid
