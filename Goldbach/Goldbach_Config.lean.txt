@@ -1,0 +1,36 @@
+/- 
+GoldbachConfig.lean – Configuration space, potential, Hamiltonian.
+-/
+
+import Mathlib.Data.Nat.Prime
+import Mathlib.Combinatorics.SimpleGraph.Path
+import Kernel.SpectralLibrary
+
+open Matrix
+
+/-- Configuration space : {0, 1, ..., 2N} -/
+def GoldbachConfig (N : ℕ) := Fin (2*N + 1)
+
+/-- Potentiel : 0 sur les nombres premiers, λ sinon -/
+def GoldbachPotential (N : ℕ) (λ : ℝ) (n : GoldbachConfig N) : ℝ :=
+  if Nat.Prime n.val then 0 else λ
+
+/-- Graphe : chemin sur 2N+1 sommets -/
+def GoldbachGraph (N : ℕ) : SimpleGraph (GoldbachConfig N) :=
+  SimpleGraph.pathGraph (2*N + 1)
+
+/-- Hamiltonien spectral -/
+noncomputable def GoldbachHamiltonian (N : ℕ) (λ ε : ℝ) (hε : 0 < ε) :
+    Matrix (GoldbachConfig N) (GoldbachConfig N) ℝ :=
+  let V := diagonal (GoldbachPotential N λ)
+  let Δ := adjacencyMatrixOf (GoldbachGraph N)
+  V + ε • Δ
+
+/-- Instance de SpectralProblem -/
+def GoldbachSpectralProblem (N : ℕ) (λ ε : ℝ) (hε : 0 < ε) :
+    Kernel.SpectralLibrary.SpectralProblem (GoldbachConfig N) where
+  potential := GoldbachPotential N λ
+  graph := GoldbachGraph N
+  epsilon := ε
+  heps := hε
+  connected := SimpleGraph.pathGraph_connected (2*N + 1)
