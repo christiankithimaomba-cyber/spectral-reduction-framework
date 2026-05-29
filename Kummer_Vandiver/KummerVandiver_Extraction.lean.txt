@@ -1,0 +1,30 @@
+/-
+KummerVandiverExtraction.lean – Algorithme d'extraction fonctionnel.
+-/
+
+import .KummerVandiverPillars
+import Kernel.FunctionalDescent
+
+open SpectralLibrary
+
+variable (p : ℕ) (hp : p.Prime ∧ p > 2)
+
+/-- L'algorithme de descente (simple calcul sur une petite matrice) donne λ_min. -/
+def smallest_eigenvalue : ℝ :=
+  let H := H_KV p hp
+  FunctionalDescent.min_eigenvalue H   -- implémentation dans le kernel (constante)
+
+/-- La conjecture est vraie ssi la plus petite valeur propre est > 0. -/
+def kummer_vandiver_decision : Bool :=
+  smallest_eigenvalue p hp > 0
+
+/-- Correction : λ_min > 0 ↔ p ne divise pas h_p^+. -/
+theorem extraction_correct : kummer_vandiver_decision p hp = true ↔
+    ¬ (p ∣ class_number_plus p hp) :=
+  by
+    have h_eig := FunctionalDescent.min_eigenvalue_correct H_KV p hp
+    rw [h_eig]
+    have h_equiv := torsion_K4_equiv p hp
+    -- Par l'équivalence, p divise h_p^+ ssi 1 est valeur propre de T, i.e., 0 est valeur propre de H.
+    -- Donc λ_min H > 0 ssi p ne divise pas h_p^+.
+    exact eigenvalue_pos_iff_no_torsion h_eig h_equiv
