@@ -1,0 +1,31 @@
+/- XVII_MaxDetP1.lean - Pilier P1 : état fondamental unique strictement positif. -/
+
+import XVII_MaxDetSAT
+import Kernel.SpectralLibrary
+
+open Kernel.SpectralLibrary
+
+namespace SeriesXVII.MaxDet
+
+variable (n : ℕ) (hn : n ≥ 1) (k : ℤ) (hk : k ≥ 0)
+
+def Φ := Φ_n_k n k
+def M : ℕ := Φ.numVars
+def ConfigSAT := Fin M → Bool
+
+def V (σ : ConfigSAT) : ℝ := if satisfies Φ σ then 0 else M^2
+
+def Δ : Matrix ConfigSAT ConfigSAT ℝ := adjacencyMatrixOf (hypercube_graph M)
+
+def H : Matrix ConfigSAT ConfigSAT ℝ := diagonal V + Δ
+
+lemma H_irreducible : Irreducible H :=
+  matrix_is_irreducible_of_adjacency_graph (hypercube_connected M)
+
+/-- Théorème P1 : existence et unicité d’un état fondamental strictement positif. -/
+theorem ground_state_unique_pos :
+    ∃! ψ : ConfigSAT → ℝ, (∀ σ, ψ σ > 0) ∧ (∑ σ, ψ σ ^ 2 = 1) ∧
+      (H *ᵥ ψ = (λ_min H) • ψ) :=
+  perron_frobenius H
+
+end SeriesXVII.MaxDet
