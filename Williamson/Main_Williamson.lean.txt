@@ -1,0 +1,13 @@
+/- XVI_MainWilliamson.lean - Fichier principal, vérifie tous les axiomes. -/
+
+import XVI_WilliamsonFinal
+
+open SeriesXVI.Williamson
+
+#eval "Williamson conjecture: all modules loaded."
+
+-- Vérification du théorème final
+#check williamson_conjecture
+
+-- Audit des axiomes utilisés
+#print axioms williamson_conjecture

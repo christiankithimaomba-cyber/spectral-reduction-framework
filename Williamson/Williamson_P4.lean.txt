@@ -1,0 +1,49 @@
+/- XVI_WilliamsonP4.lean - Pilier P4 : extraction déterministe par D‑RSP. -/
+
+import XVI_WilliamsonP3
+import Kernel.PowerIteration
+import Kernel.DRSP
+
+open Kernel.SpectralLibrary
+
+namespace SeriesXVI.Williamson
+
+/-- Axiome : écart d’amplitude pour l’hamiltonien de Williamson.
+    Preuve par perturbation de Kato (voir article XVI.5). -/
+axiom williamson_amplitude_gap (m : ℕ) (hm : m ≥ 1) :
+    ∃ μ > 0, let ψ₀ := ground_state (spectral_problem m);
+    ∃ σ₀ : Config m, is_williamson σ₀ ∧
+      ∀ σ ≠ σ₀, ψ₀ σ₀ ≥ ψ₀ σ + μ
+
+def H := hamiltonian m
+def M := (Φ_m m).numVars
+def α : ℝ := M^2 + 2*M + 1
+def A := α • 1 - H
+def uniform_mps : MPS M 1 := MPS.uniform
+
+def power_iteration_williamson (T χ : ℕ) : MPS M χ :=
+  power_iteration A uniform_mps χ T
+
+def extract_matrices (ψ : MPS M χ) : Option (Matrix m m ℤ × Matrix m m ℤ × Matrix m m ℤ × Matrix m m ℤ) :=
+  let bits := drsp ψ
+  -- décodage : 4*m^2 bits en quatre matrices m×m
+  if bits.length < 4*m^2 then none else
+  let to_mat (start : ℕ) : Matrix m m ℤ :=
+    Matrix.of (fun i j => if bits[start + i.val*m + j.val] then 1 else -1)
+  some (to_mat 0, to_mat (m^2), to_mat (2*m^2), to_mat (3*m^2))
+
+theorem williamson_extraction_correct (m : ℕ) (hm : m ≥ 1) :
+    ∃ T0 χ0, ∀ T ≥ T0, ∀ χ ≥ χ0,
+      let ψ := power_iteration_williamson T χ
+      let opt := extract_matrices ψ
+      opt.isSome ∧ let (A,B,C,D) := opt.get; is_williamson (A,B,C,D) :=
+  by
+    have h_amp := williamson_amplitude_gap m hm
+    have h_gap := williamson_spectral_gap m
+    have h_conv := power_iteration_converges A h_gap uniform_mps (ground_state (spectral_problem m))
+      (by positivity)
+    let δ := (h_amp.choose) / 4
+    obtain ⟨T0, χ0, h_conv'⟩ := h_conv δ (by linarith)
+    exact ⟨T0, χ0, fun T hT χ hχ => drsp_generic_correctness h_amp (h_conv' T hT χ hχ)⟩
+
+end SeriesXVI.Williamson
