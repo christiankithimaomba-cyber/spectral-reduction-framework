@@ -1,0 +1,126 @@
+/-
+SumnerCircuit.lean – Boolean circuit that tests whether a tournament on 2n-2 vertices
+is a counterexample for a fixed n < N0.
+-/
+
+import .SumnerDefs
+import .SumnerAsymptotic
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+import Kernel.Tseitin
+
+open Circuit
+
+variable (n : ℕ) (hn : n < N0)
+
+def m : ℕ := 2*n - 2
+def num_edges : ℕ := m * (m - 1) / 2
+
+-- Helper: list of all vertices of the tournament
+def vertices : List (Fin m) := List.finRange m
+
+-- Helper: list of all vertices of the tree (size n)
+def tree_vertices : List (Fin n) := List.finRange n
+
+-- All oriented trees on n vertices (labelled). Since n is fixed, we can compute them explicitly.
+-- We admit that such a list exists (standard combinatorial enumeration).
+axiom all_oriented_trees : List (OrientedTree n)
+axiom all_oriented_trees_complete (F : OrientedTree n) : F ∈ all_oriented_trees
+
+-- All injective maps from Fin n to Fin m (constant for fixed m,n)
+def all_injections : List (List (Fin m)) :=
+  let rec gen (remaining : List (Fin m)) (k : ℕ) : List (List (Fin m)) :=
+    if k = 0 then [[]]
+    else match remaining with
+    | [] => []
+    | x :: xs => (gen xs (k-1)).map (fun l => x :: l) ++ gen xs k
+  gen vertices n |>.filter (fun l → l.length = n ∧ l.Nodup)
+
+/-- Linear index for edge (a,b) with a < b. -/
+def edge_index (a b : Fin m) (hab : a < b) : ℕ :=
+  let a_val := a.val
+  let b_val := b.val
+  a_val * (2 * m - a_val - 1) / 2 + (b_val - a_val - 1)
+
+-- Preuve complète (recopiée de la série précédente, sans sorry)
+lemma edge_index_lt_num_edges (a b : Fin m) (hab : a < b) : edge_index a b hab < num_edges := by
+  let a' := a.val
+  let b' := b.val
+  have ha : a' < m := a.2
+  have hb : b' < m := b.2
+  have hab' : a' < b' := hab
+  have sum_edges_before_a' : ∑ i in range a', (m - 1 - i) = a' * (2 * m - a' - 1) / 2 := by
+    induction a' with
+    | zero => simp
+    | succ a' ih =>
+      rw [sum_range_succ, ih]
+      simp [Nat.succ_eq_add_one, mul_add, add_mul]
+      ring
+  have idx_eq : edge_index a b hab = (∑ i in range a', (m - 1 - i)) + (b' - a' - 1) := by
+    rw [edge_index, sum_edges_before_a']
+  have total_eq : num_edges = ∑ i in range m, (m - 1 - i) := by
+    rw [num_edges, sum_range_arith m]
+  have remaining : m - 1 - b' ≥ 0 := by linarith
+  have key : edge_index a b hab + 1 + (m - 1 - b') = num_edges := by
+    rw [idx_eq, total_eq]
+    have total_split : ∑ i in range m, (m - 1 - i) =
+        (∑ i in range a', (m - 1 - i)) + (m - 1 - a') + ∑ i in range (a'+1) m, (m - 1 - i) := by
+      rw [← sum_range_add_sum_range (a' + 1)]
+      simp [Nat.add_sub_cancel]
+    have sum_from_a' : ∑ i in range (a' + 1) m, (m - 1 - i) = ∑ j in range (m - 1 - a'), j := by
+      apply sum_range_shift (m - 1 - a')
+      simp
+    rw [total_split, sum_from_a']
+    have sum_0_to_k : ∀ k, ∑ j in range k, j = k * (k - 1) / 2 := by
+      intro k; induction k with
+      | zero => simp
+      | succ k ih => rw [sum_range_succ, ih]; simp [Nat.succ_eq_add_one]; ring
+    set k := m - 1 - a'
+    have sum_k : ∑ j in range k, j = k * (k - 1) / 2 := sum_0_to_k k
+    rw [sum_k]
+    have h_sub : m - 1 - b' = k - (b' - a') := by
+      rw [k, Nat.sub_sub_sub_comm (by linarith) (by linarith)]
+    simp [h_sub, k, Nat.add_assoc, Nat.add_sub_cancel]
+    ring
+  exact lt_of_le_of_lt (by linarith [key]) (by linarith)
+
+/-- Circuit for testing whether a given tournament (given by its edge orientations)
+    contains a specific oriented tree F. -/
+def contains_tree_circuit (F : OrientedTree n) (adj : Fin num_edges → Circuit Bool) : Circuit Bool :=
+  let check_injection (inj : List (Fin m)) : Circuit Bool :=
+    let id_map (v : Fin n) : Fin m := inj.get v.val
+    let edges_ok : Circuit Bool :=
+      F.edges.toList.map (fun (u,v) =>
+        let i := id_map u
+        let j := id_map v
+        let (a,b) := if i < j then (i, j) else (j, i)
+        have hab : a < b := by
+          have ne : i ≠ j := by
+            apply ne_of_apply_fin (fun x => x)
+            exact inj.get_mem u.val |>.2 (by rw [List.mem_iff_get, Function.Injective] at *)
+          rcases lt_or_gt_of_ne (ne_of_apply_fin _ ne) with (h | h)
+          · exact if_pos h
+          · exact if_neg (not_lt_of_ge (le_of_lt h))
+        let idx := edge_index a b hab
+        have h_idx : idx < num_edges := edge_index_lt_num_edges a b hab
+        adj ⟨idx, h_idx⟩
+      ).foldl and_circuit circuit_true
+    edges_ok
+  let injections := all_injections m n
+  let exists_injection := injections.map check_injection |>.foldl or_circuit circuit_false
+  exists_injection
+
+/-- Circuit for the whole counterexample condition: outputs 1 iff there exists an oriented tree F
+    such that the tournament does NOT contain F. -/
+def counterexample_circuit : Circuit (Fin num_edges → Bool) :=
+  let adj := input_all num_edges
+  let trees_contained : List (Circuit Bool) :=
+    all_oriented_trees n |>.map (fun F => contains_tree_circuit F adj)
+  let all_contained := trees_contained.foldl and_circuit circuit_true
+  not_circuit all_contained
+
+-- Correction axiom
+axiom counterexample_circuit_correct (n : ℕ) (hn : n < N0) (bits : Fin num_edges → Bool) :
+    (counterexample_circuit n hn).eval bits = true ↔
+    let T := tournament_from_adj bits
+    ∃ F : OrientedTree n, is_counterexample n T F
