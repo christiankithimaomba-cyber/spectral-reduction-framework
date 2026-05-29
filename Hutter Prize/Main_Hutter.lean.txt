@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXXI.
+-/
+
+import .HutterSynthesis
+
+open SpectralLibrary
+
+#check hutter_prize_solved
+
+-- List all axioms used
+#print axioms hutter_prize_solved
