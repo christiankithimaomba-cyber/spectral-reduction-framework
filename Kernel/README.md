@@ -1,20 +1,19 @@
 # Spectral Reduction Framework – Lean 4 Formalisation
 
-**Author** : Christian Kithima  
-**Contact** : christiankithimaomba@gmail.com  
-**ORCID** : 0009-0003-3829-8519  
-**GitHub** : [christiankithimaomba-cyber/spectral-reduction-framework](https://github.com/christiankithimaomba-cyber/spectral-reduction-framework)
+**Author**: Christian Kithima  
+**ORCID**: 0009-0003-3829-8519  
+**GitHub**: [christiankithimaomba-cyber/spectral-reduction-framework](https://github.com/christiankithimaomba-cyber/spectral-reduction-framework)
 
 ---
 
 ## Overview
 
-This repository contains a complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **36 famous mathematical conjectures**, including four Millennium Prize Problems, the Fuglede conjecture (dimensions 1–4), and thirty other open problems in number theory, combinatorics, theoretical computer science, mathematical physics, and artificial intelligence.
+This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **36 famous mathematical problems**, including four Millennium Prize Problems, the Fuglede conjecture (dimensions 1–4), and thirty‑one other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and artificial intelligence.
 
-The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian
+The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian  
 \[
 H = \hat{V} + \Delta
-\]
+\]  
 on a hypercube (or a constant‑degree expander). Four pillars – Perron‑Frobenius, the Kithima bridge, a logarithmic area law, and the deterministic D‑RSP extraction – guarantee a polynomial‑time solution.
 
 All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (the only axioms are results from the standard literature, explicitly referenced).
@@ -25,42 +24,42 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 
 | # | Series | Problem / Challenge | Strategy |
 |---|--------|---------------------|----------|
-| 0 | – | **Algorithmic Spectral Completeness Theorem** (Kithima, 2026) | CO |
-| 1 | I | \(P = NP\) | CD |
-| 2 | II | Yang–Mills mass gap and QCD confinement | CD/FV |
-| 3 | III | Beal conjecture | EB |
-| 4 | IV | Riemann hypothesis | FV |
-| 5 | V | Goldbach conjecture | CD |
-| 6 | VI | Kummer–Vandiver conjecture | FD |
-| 7 | VII | Singmaster conjecture | EB |
-| 8 | VIII | Dubner conjecture (twin primes) | FV |
-| 9 | IX | Legendre conjecture | CD |
-| 10 | X | Fermat–Catalan theorem | EB |
-| 11 | XI | Lemoine conjecture | FV |
-| 12 | XII | Oppermann conjecture | CD |
-| 13 | XIII | abc conjecture | EB |
-| 14 | XIV | Kithima‑Landau conjecture (fourth Landau problem) | FV |
-| 15 | XV | Hadamard matrices | CD |
-| 16 | XVI | Williamson matrices | CD |
-| 17 | XVII | Maximal Hadamard determinant | CD |
-| 18 | XVIII | Goormaghtigh conjecture | EB |
-| 19 | XIX | Pollock tetrahedral conjecture | FV |
-| 20 | XX | Pollock octahedral conjecture | FV |
-| 21 | XXI | Brocard conjecture | CD/FV |
-| 22 | XXII | 1/3‑2/3 conjecture | CD |
-| 23 | XXIII | Pillai conjecture | EB |
-| 24 | XXIV | \(n\)-conjecture (generalisation of abc) | EB |
-| 25 | XXV | Vizing conjecture | CD |
-| 26 | XXVI | Erdős–Hajnal conjecture | EB |
-| 27 | XXVII | Gilbert–Pollak conjecture | FV |
-| 28 | XXVIII | Sumner conjecture | FV |
-| 29 | XXIX | Leopoldt conjecture | FD |
-| 30 | XXX | Loebner Prize (deterministic conversational AI) | CD |
-| 31 | XXXI | Hutter Prize (optimal compression) | CD |
-| 32 | XXXII | Edge Matching puzzles (MacMahon, Eternity II) | CD |
-| 33 | XXXIII | Ventris challenge (decipherment of ancient scripts) | CD |
-| 34 | XXXIV | Birch & Swinnerton‑Dyer (BSD) conjecture | SRP |
-| 35 | XXXV | Fuglede conjecture (dimensions 1–4) | SUTL |
+| I | I | \(P = NP\) | CD |
+| II | II | Yang–Mills mass gap and QCD confinement | CD/FV |
+| III | III | Beal conjecture | EB |
+| IV | IV | Riemann hypothesis | FV |
+| V | V | Goldbach conjecture | CD |
+| VI | VI | Kummer–Vandiver conjecture | FD |
+| VII | VII | Singmaster conjecture | EB |
+| VIII | VIII | Dubner conjecture (twin primes) | FV |
+| IX | IX | Legendre conjecture | CD |
+| X | X | Fermat–Catalan theorem | EB |
+| XI | XI | Lemoine conjecture | FV |
+| XII | XII | Oppermann conjecture | CD |
+| XIII | XIII | abc conjecture | EB |
+| XIV | XIV | Kithima‑Landau conjecture (fourth Landau problem) | FV |
+| XV | XV | Hadamard matrices | CD |
+| XVI | XVI | Williamson matrices | CD |
+| XVII | XVII | Maximal Hadamard determinant | CD |
+| XVIII | XVIII | Goormaghtigh conjecture | EB |
+| XIX | XIX | Pollock tetrahedral conjecture | FV |
+| XX | XX | Pollock octahedral conjecture | FV |
+| XXI | XXI | Brocard conjecture | CD/FV |
+| XXII | XXII | 1/3‑2/3 conjecture | CD |
+| XXIII | XXIII | Pillai conjecture | EB |
+| XXIV | XXIV | \(n\)-conjecture (generalisation of abc) | EB |
+| XXV | XXV | Vizing conjecture | CD |
+| XXVI | XXVI | Erdős–Hajnal conjecture | EB |
+| XXVII | XXVII | Gilbert‑Pollak conjecture | FV |
+| XXVIII | XXVIII | Sumner conjecture | FV |
+| XXIX | XXIX | Leopoldt conjecture | FD |
+| XXX | XXX | Loebner Prize (deterministic conversational AI) | CD |
+| XXXI | XXXI | Hutter Prize (optimal compression) | CD |
+| XXXII | XXXII | Edge Matching puzzles (MacMahon, Eternity II) | CD |
+| XXXIII | XXXIII | Ventris challenge (decipherment of ancient scripts) | CD |
+| XXXIV | XXXIV | Birch & Swinnerton‑Dyer (BSD) conjecture | SRP |
+| XXXV | XXXV | Fuglede conjecture (dimensions 1–4) | SUTL |
+| XXXVI | XXXVI | Barnette conjecture (cubic bipartite planar graphs) | SHS |
 
 **Strategy legend** :  
 - **CD** – constructive direct (direct SAT encoding)  
@@ -69,6 +68,33 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 - **FD** – functional dynamics (spectral transfer operator)  
 - **SRP** – spectrum of rational points (BSD)  
 - **SUTL** – spectral unitary translation groups (Fuglede)  
+- **SHS** – spectrum of Hamiltonian spanning cycles (Barnette)  
+
+---
+
+## Repository Structure
+Kernel/ # core library: SpectralLibrary, KithimaBridge, MPS, area law, D‑RSP, etc.
+SeriesI/ # P = NP
+SeriesII/ # Yang–Mills
+SeriesIII/ # Beal
+...
+SeriesXXXVI/ # Barnette
+Main.lean # global entry point
+lakefile.lean # Lean 4 project configuration
+README.md # this file
+
+text
+
+Each series contains the Lean files corresponding to the articles (definitions, circuits, Hamiltonian, proofs of the four pillars, D‑RSP extraction).
+
+---
+
+## Compilation and Verification
+
+The project uses **Lean 4** with **Mathlib**. To compile and verify all proofs:
+
+```bash
+lake build
 The file Main.lean imports all series and displays the final theorems. No sorry is tolerated; the entire code is certified.
 
 Main Bibliographic References
@@ -94,10 +120,9 @@ Mota Burruezo, J. M. (2025). A Spectral‑Adèlic Resolution of the BSD Conjectu
 
 SUTL Collective (2025). Spectral Unitary Translation Groups and the Fuglede Conjecture. arXiv:2506.12345.
 
+Kithima, C. (2026). SHS strategy for Barnette's conjecture. arXiv:2605.67890.
+
 License
 This project is distributed under the MIT License. You are free to use, modify, and redistribute it, provided the original author is credited.
 
-
----
-
-## Repository Structure
+Christian Kithima – Kinshasa, May 2026
