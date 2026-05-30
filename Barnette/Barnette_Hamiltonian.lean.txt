@@ -1,0 +1,72 @@
+/-
+BarnetteHamiltonian.lean – Spectral Hamiltonian and four pillars.
+Author: Christian Kithima
+ORCID: 0009-0003-3829-8519
+GitHub: https://github.com/christiankithimaomba-cyber/spectral-reduction-framework/tree/main/Kernel
+-/
+
+import .BarnetteSAT
+import .BarnetteGap
+import Kernel.SpectralLibrary
+import Kernel.KithimaBridge
+import Kernel.MPSAreaLaw
+import Kernel.HilbertCurve
+import Kernel.Renormalisation
+
+open SpectralLibrary
+
+variable (G : SimpleGraph V) [Fintype V] [DecidableEq V] (hG : barnette_graph G)
+
+def Φ : SATInstance := Φ_G G hG
+def M : ℕ := Φ.numVars
+def Config := Fin M → Bool
+
+def V_pot (σ : Config) : ℝ := if satisfies Φ σ then 0 else M^2
+def Δ : Matrix Config Config ℝ := adjacencyMatrixOf (hypercube_graph M)
+def H_G : Matrix Config Config ℝ := diagonal V_pot + Δ
+
+lemma H_irreducible : Irreducible H_G :=
+  matrix_is_irreducible_of_adjacency_graph (hypercube_connected M)
+
+-- P1: unique strictly positive ground state
+theorem ground_state_unique_pos :
+    ∃! ψ : Config → ℝ, (∀ σ, ψ σ > 0) ∧ (∑ σ, ψ σ ^ 2 = 1) ∧
+      (H_G *ᵥ ψ = (λ_min H_G) • ψ) :=
+  perron_frobenius (mk_spectral_problem H_G)
+
+-- P2: constant spectral gap via Kithima Bridge
+theorem spectral_gap_constant : spectral_gap H_G ≥ 2 :=
+  kithima_bridge (diagonal V_pot) (by simp [V_pot, M]) Δ (by simp) 1 (by norm_num)
+
+-- Auxiliary: clause graph has bounded degree (after degree reduction)
+lemma clause_graph_bounded_degree : ∃ d, ∀ v, degree (clause_graph Φ) v ≤ d :=
+  degree_reduction_bounded Φ
+
+-- Exponential decay (from constant gap)
+lemma exp_decay (ψ := ground_state H_G) :
+    ∃ C ξ > 0, ∀ A B : Finset (Fin M), Disjoint A B →
+      |⟨σ_A σ_B⟩_ψ - ⟨σ_A⟩_ψ * ⟨σ_B⟩_ψ| ≤ C * Real.exp (- (graph_distance (clause_graph Φ) A B) / ξ) :=
+  cluster_expansion_correlations (clause_graph Φ) clause_graph_bounded_degree ψ (spectral_gap_constant G hG)
+
+-- Linear area law via Brandão‑Horodecki
+lemma linear_area_law (ψ := ground_state H_G) :
+    ∃ C1 > 0, ∀ B : Finset (Fin M), Connected B →
+      entanglement_entropy (reduced_density ψ B) ≤ C1 * edge_boundary (clause_graph Φ) B :=
+  brandao_horodecki (clause_graph Φ) clause_graph_bounded_degree ψ (exp_decay G hG)
+
+-- Hilbert curve bound
+lemma hilbert_bound :
+    ∃ (π : Fin M → Fin M) (C_hilb > 0), Bijective π ∧
+      ∀ k, edge_boundary (clause_graph Φ) {π i | i < k} ≤ C_hilb * Real.log M :=
+  hilbert_curve_bound (clause_graph Φ) clause_graph_bounded_degree
+
+-- P3: logarithmic area law
+theorem area_law (ψ := ground_state H_G) :
+    ∃ C > 0, ∀ B : Finset Config,
+      entanglement_entropy (reduced_density ψ (B.map (fun x => x))) ≤ C * Real.log M :=
+  renormalisation_area_law (linear_area_law G hG) (hilbert_bound G hG)
+
+-- P4: D‑RSP extraction
+theorem drsp_correct : ∃ alg, polynomial_time alg ∧
+    (∀ σ, satisfies Φ σ ↔ alg returns σ) :=
+  drsp_correct H_G

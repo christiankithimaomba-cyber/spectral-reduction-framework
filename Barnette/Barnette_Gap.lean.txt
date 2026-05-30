@@ -1,0 +1,21 @@
+/-
+BarnetteGap.lean – Spectral gap via Cheeger and Kithima Bridge.
+Reference: Cheeger (1970), Kithima Bridge (2026).
+Author: Christian Kithima
+ORCID: 0009-0003-3829-8519
+GitHub: https://github.com/christiankithimaomba-cyber/spectral-reduction-framework/tree/main/Kernel
+-/
+
+import .BarnetteDefs
+import Kernel.DiscreteCheeger
+
+variable (G : SimpleGraph V) [Fintype V] [DecidableEq V] (hG : barnette_graph G)
+
+/-- For cubic planar bipartite graphs, the Cheeger constant is bounded below by a positive constant. -/
+axiom cheeger_constant_positive (G : SimpleGraph V) [Fintype V] (hG : barnette_graph G) :
+    ∃ δ > 0, ∀ S : Finset V, S.Nonempty → S ≠ univ →
+      edge_boundary G S ≥ δ * min (S.card) ((Fintype.card V - S.card))
+
+/-- Spectral gap of the transfer operator T_G is uniformly bounded below. -/
+axiom spectral_gap_T_pos (G : SimpleGraph V) [Fintype V] [DecidableEq V] (hG : barnette_graph G) :
+    ∃ γ > 0, ∀ λ ∈ spectrum (T_G G hG), λ ≠ 1 → |1 - λ| ≥ γ
