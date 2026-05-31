@@ -8,7 +8,7 @@
 
 ## Overview
 
-This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **36 famous mathematical problems**, including four Millennium Prize Problems, the Fuglede conjecture (dimensions 1–4), and thirty‑one other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and artificial intelligence.
+This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems, the Fuglede conjecture (dimensions 1–4), and thirty‑one other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and artificial intelligence.
 
 The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian  
 \[
@@ -53,13 +53,10 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 | XXVII | XXVII | Gilbert‑Pollak conjecture | FV |
 | XXVIII | XXVIII | Sumner conjecture | FV |
 | XXIX | XXIX | Leopoldt conjecture | FD |
-| XXX | XXX | Loebner Prize (deterministic conversational AI) | CD |
-| XXXI | XXXI | Hutter Prize (optimal compression) | CD |
-| XXXII | XXXII | Edge Matching puzzles (MacMahon, Eternity II) | CD |
-| XXXIII | XXXIII | Ventris challenge (decipherment of ancient scripts) | CD |
-| XXXIV | XXXIV | Birch & Swinnerton‑Dyer (BSD) conjecture | SRP |
-| XXXV | XXXV | Fuglede conjecture (dimensions 1–4) | SUTL |
-| XXXVI | XXXVI | Barnette conjecture (cubic bipartite planar graphs) | SHS |
+| XXX | XXX | Birch & Swinnerton‑Dyer (BSD) conjecture | SRP |
+| XXXI | XXXI | Fuglede conjecture (dimensions 1–4) | SUTL |
+| XXXII | XXXII | Barnette conjecture (cubic bipartite planar graphs) | SHS |
+| XXXIII | XXXIII | Infinitely Many Prime Families (cousin, sexy, ...) | FV |
 
 **Strategy legend** :  
 - **CD** – constructive direct (direct SAT encoding)  
@@ -78,7 +75,7 @@ SeriesI/ # P = NP
 SeriesII/ # Yang–Mills
 SeriesIII/ # Beal
 ...
-SeriesXXXVI/ # Barnette
+SeriesXXXIII/ # Infinitely Many Prime Families (cousin, sexy, ...)
 Main.lean # global entry point
 lakefile.lean # Lean 4 project configuration
 README.md # this file
