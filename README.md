@@ -8,7 +8,7 @@
 
 ## Overview
 
-This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems, the Fuglede conjecture (dimensions 1–4), and thirty‑one other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and artificial intelligence.
+This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems, the Beal conjecture, the Fuglede conjecture (dimensions 1–4), the Barnette conjecture and other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and algebraic number theory.
 
 The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian  
 \[
