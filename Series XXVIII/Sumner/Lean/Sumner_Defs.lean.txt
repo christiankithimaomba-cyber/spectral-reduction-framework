@@ -1,0 +1,28 @@
+/-
+SumnerDefs.lean – Basic definitions for Sumner's conjecture (universal tournament conjecture).
+-/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Combinatorics.SimpleGraph.Tournament
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
+
+open SimpleGraph
+
+/-- A tournament on n vertices is an orientation of a complete graph. -/
+def Tournament (n : ℕ) := SimpleGraph (Fin n)
+
+/-- An oriented tree on n vertices is a directed acyclic connected graph with n-1 edges. -/
+def OrientedTree (n : ℕ) := SimpleGraph (Fin n)
+
+/-- Sumner's conjecture: every tournament on 2n-2 vertices contains every oriented tree on n vertices
+    as a subgraph (not necessarily induced). -/
+def sumner_conjecture : Prop :=
+  ∀ (n : ℕ) (n_ge_3 : n ≥ 3),
+    ∀ (T : Tournament (2*n - 2)) (F : OrientedTree n),
+      ∃ (f : Fin n → Fin (2*n - 2)), Function.Injective f ∧
+        ∀ (u v : Fin n), F.Adj u v → T.Adj (f u) (f v)
+
+/-- Counterexample: a tournament T on 2n-2 vertices that does NOT contain some oriented tree F. -/
+def is_counterexample (n : ℕ) (T : Tournament (2*n - 2)) (F : OrientedTree n) : Prop :=
+  ¬ ∃ (f : Fin n → Fin (2*n - 2)), Function.Injective f ∧
+        ∀ (u v : Fin n), F.Adj u v → T.Adj (f u) (f v)

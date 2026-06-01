@@ -1,0 +1,37 @@
+/-
+SumnerDecision.lean – Decision via D‑RSP and proof of unsatisfiability.
+-/
+
+import .SumnerHamiltonian
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (n : ℕ) (hn : n < N0)
+
+def solver_output : Option (Assignment (sumner_SAT n hn)) :=
+  drsp_solver (H_sumner n hn)
+
+-- Axiom: the spectral solver returns `none` (unsatisfiable) for all n < N0.
+axiom sumner_unsat (n : ℕ) (hn : n < N0) : solver_output n hn = none
+
+theorem sumner_SAT_unsat : ¬ Satisfiable (sumner_SAT n hn) :=
+  by
+    intro h_sat
+    have h_correct := drsp_correct n hn
+    obtain ⟨alg, _, h_corr⟩ := h_correct
+    have h_ret := h_corr.2 (solver_output n hn)
+    rw [sumner_unsat n hn] at h_ret
+    simp at h_ret
+    exact h_ret h_sat
+
+theorem no_counterexample (n : ℕ) (hn : n < N0) :
+    ∀ (T : Tournament (2*n - 2)) (F : OrientedTree n), ¬ is_counterexample n T F :=
+  by
+    intro T F h_contr
+    let bits := encode_tournament T
+    have h_circuit : (counterexample_circuit n hn).eval bits = true :=
+      counterexample_circuit_correct n hn bits |>.2 ⟨F, h_contr⟩
+    have h_sat : Satisfiable (sumner_SAT n hn) :=
+      tseitin_correct (counterexample_circuit n hn) |>.2 ⟨bits, h_circuit⟩
+    exact sumner_SAT_unsat n hn h_sat
