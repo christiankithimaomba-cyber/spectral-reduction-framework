@@ -1,0 +1,15 @@
+/- 
+LegendreAreaLaw.lean – Loi d’aire logarithmique.
+-/
+
+import .LegendreConductance
+import Kernel.MPSAreaLaw
+
+open Kernel.MPS
+
+theorem legendre_area_law (n : ℕ) (λ ε : ℝ) (hε : 0 < ε) :
+    let ψ := ground_state (LegendreSpectralProblem n λ ε hε)
+    let ψ_mps := MPS.from_vector ψ (2*n+1)
+    ∃ C α, 0 < α ∧ α < 1 ∧ ∀ k,
+      ∑ i ≥ k, (SVD.exists_svd (eval_matrix ψ_mps)).2.singularValues i ^ 2 ≤ C * α ^ k :=
+  area_law_hastings ψ_mps (ε^2 / (32 * n^2)) (by linarith [legendre_spectral_gap n λ ε hε])
