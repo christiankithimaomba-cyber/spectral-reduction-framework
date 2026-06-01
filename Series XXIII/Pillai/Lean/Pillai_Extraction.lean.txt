@@ -1,0 +1,31 @@
+/- XXIII_PillaiExtraction.lean - Extraction par D‑RSP pour la vérification finie. -/
+
+import XXIII_PillaiHamiltonian
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (k : ℤ) (B : ℕ) (hB : B = B k)
+
+def H := pillai_hamiltonian k
+
+def pillai_solver : Option (Fin (Φ_k k).numVars → Bool) := drsp_solver H
+
+def decode_solution (σ : Fin (Φ_k k).numVars → Bool) : ℕ × ℕ × ℕ × ℕ :=
+  let L := Nat.log2 B + 1
+  let bits_to_nat (start : ℕ) : ℕ :=
+    let rec sum (i : ℕ) (acc : ℕ) : ℕ :=
+      if i = L then acc
+      else sum (i+1) (acc + (if σ (start + i) then 2^i else 0))
+    sum 0 0
+  (bits_to_nat 0, bits_to_nat L, bits_to_nat (2*L), bits_to_nat (3*L))
+
+/-- Le solveur retourne une affectation ssi une solution existe. -/
+theorem pillai_extraction_correct (k : ℤ) :
+    (∃ x y m n, pillai_eq x y m n k) ↔
+    let σ := pillai_solver k
+    σ.isSome ∧ (let (x,y,m,n) := decode_solution σ.get; pillai_eq x y m n k) :=
+  by
+    have h := drsp_correct (pillai_hamiltonian k)
+    rw [← sat_iff_solver_nonempty] at h
+    exact h
