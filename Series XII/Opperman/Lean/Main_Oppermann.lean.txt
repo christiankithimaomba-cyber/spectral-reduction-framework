@@ -1,0 +1,12 @@
+/-
+MainXII.lean – Fichier principal pour la série XII (Oppermann).
+-/
+
+import .OppermannFinal
+
+open SpectralLibrary
+
+#check oppermann_conjecture
+
+-- Audit des axiomes
+#print axioms oppermann_conjecture

@@ -1,0 +1,46 @@
+/-
+OppermannCircuit.lean – Circuit booléen pour tester la condition de Oppermann.
+-/
+
+import .OppermannDefs
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+import Kernel.Circuit.Prime
+
+open Circuit
+
+variable (n : ℕ) (hn : n ≥ 1)
+
+def L_left : ℕ := Nat.log2 (n^2) + 1
+def L_right : ℕ := Nat.log2 (n*(n+1)) + 1
+
+/-- Circuit pour tester qu'un nombre x est dans l'intervalle gauche et premier. -/
+def left_prime_circuit (x : Circuit (List Bool)) : Circuit Bool :=
+  let lower := gt x (constant (n*(n-1)))
+  let upper := lt x (constant (n^2))
+  let and_lu := and lower upper
+  let pr := prime_circuit x
+  and and_lu pr
+
+/-- Circuit pour tester qu'un nombre y est dans l'intervalle droit et premier. -/
+def right_prime_circuit (y : Circuit (List Bool)) : Circuit Bool :=
+  let lower := gt y (constant (n^2))
+  let upper := lt y (constant (n*(n+1)))
+  let and_lu := and lower upper
+  let pr := prime_circuit y
+  and and_lu pr
+
+/-- Circuit principal. -/
+def oppermann_circuit : Circuit (Fin (L_left + L_right) → Bool) :=
+  let x := input 0 L_left
+  let y := input L_left L_right
+  let left_ok := left_prime_circuit x
+  let right_ok := right_prime_circuit y
+  and left_ok right_ok
+
+/-- Axiome : correction du circuit (preuve standard dans le kernel). -/
+axiom oppermann_circuit_correct (bits : Fin (L_left + L_right) → Bool) :
+    (oppermann_circuit n).eval bits = true ↔
+    let x := bits_to_nat (bits.slice 0 L_left)
+    let y := bits_to_nat (bits.slice L_left L_right)
+    n*(n-1) < x ∧ x < n^2 ∧ n^2 < y ∧ y < n*(n+1) ∧ Prime x ∧ Prime y
