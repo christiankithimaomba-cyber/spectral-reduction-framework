@@ -1,0 +1,23 @@
+import Mathlib.Topology.Limits.Basic
+import Mathlib.Analysis.NormedSpace.Basic
+import Mathlib.LinearAlgebra.Matrix.Spectrum
+
+open Filter
+
+/-- Construction of an inductive limit of a sequence of Hilbert spaces with isometric embeddings.
+    Reference: Kato, T. (1966). Perturbation Theory for Linear Operators. Springer. -/
+axiom inductive_limit_exists {H : ℕ → Type*} [∀ k, InnerProductSpace ℝ (H k)]
+    (i : ∀ k, H k →ₗᵢ[ℝ] H (k+1)) : Type*
+
+/-- Inductive limit operator. -/
+axiom inductive_limit_op_exists {H : ℕ → Type*} [∀ k, InnerProductSpace ℝ (H k)]
+    (i : ∀ k, H k →ₗᵢ[ℝ] H (k+1))
+    (T : ∀ k, H k →ₗ[ℝ] H k) (h_compat : ∀ k, i k ∘ T k = T (k+1) ∘ i k) :
+    inductive_limit_exists i →ₗ[ℝ] inductive_limit_exists i
+
+/-- Strong resolvent convergence for the inductive limit (Kato). -/
+axiom resolvent_convergence {H : ℕ → Type*} [∀ k, InnerProductSpace ℝ (H k)]
+    (i : ∀ k, H k →ₗᵢ[ℝ] H (k+1))
+    (T : ∀ k, H k →ₗ[ℝ] H k) (h_compat : ∀ k, i k ∘ T k = T (k+1) ∘ i k)
+    (z : ℂ) (hz : 0 < im z) :
+    tendsto (fun k => resolvent (T k) z) atTop (nhds (resolvent (inductive_limit_op_exists i T h_compat) z))
