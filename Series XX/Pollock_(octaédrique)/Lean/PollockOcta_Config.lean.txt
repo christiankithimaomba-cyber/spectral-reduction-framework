@@ -1,0 +1,20 @@
+/- XX_PollockOctaConfig.lean - Configuration pour la conjecture de Pollock octaédrique. -/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Nat.Prime
+import Mathlib.Tactic
+
+open Nat
+
+/-- Nombre octaédrique O_n = n(2n²+1)/3. -/
+def octahedral (n : ℕ) : ℕ := n * (2*n^2 + 1) / 3
+
+/-- Constante effective issue de la littérature (2015). -/
+constant N0 : ℕ
+axiom N0_value : N0 = 10^10^7   -- e^{10^7} approx
+
+/-- Asymptotique : tout N > N0 est une somme d'au plus sept nombres octaédriques.
+    Ce théorème est admis (référence à la littérature : preuve paramétrique de 2015). -/
+axiom pollock_octa_asymptotic (N : ℕ) (hN : N > N0) :
+    ∃ a b c d e f g : ℕ, octahedral a + octahedral b + octahedral c + octahedral d +
+                        octahedral e + octahedral f + octahedral g = N

@@ -1,0 +1,9 @@
+/- XX_MainPollockOcta.lean - Fichier principal. -/
+
+import XX_PollockOctaFinal
+
+#eval "Pollock octahedral conjecture: all modules loaded."
+
+#check pollock_octahedral_conjecture
+
+#print axioms pollock_octahedral_conjecture
