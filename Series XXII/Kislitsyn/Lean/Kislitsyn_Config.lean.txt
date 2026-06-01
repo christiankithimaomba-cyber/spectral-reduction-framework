@@ -1,0 +1,21 @@
+/- XXII_KislitsynConfig.lean - Configuration pour la conjecture 1/3-2/3 (Kislitsyn). -/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Combinatorics.SimpleGraph.Basic
+
+open SimpleGraph
+
+/-- Paramètres : poset P de taille n. -/
+variable (P : SimpleGraph) [Fintype V(P)] (n : ℕ) (hP : Fintype.card V(P) = n)
+
+/-- Définition d’une paire équilibrée (version reformulée). -/
+def balanced_pair (x y : V(P)) : Prop :=
+  let down x := {z | (z ≤ x) ∧ (x ≠ z)}
+  let sz x := Finset.card (down x)
+  sz x ∈ Icc (n/3) (2*n/3) ∧ sz y ∈ Icc (n/3) (2*n/3) ∧ x ≠ y
+
+/-- La conjecture : toute poset non‑chaîne possède une paire équilibrée. -/
+def kislitsyn_conjecture : Prop :=
+  ∀ (G : SimpleGraph) [Fintype V(G)] [DecidableRel G.Adj],
+    (¬ IsChain G) → ∃ x y, balanced_pair x y
