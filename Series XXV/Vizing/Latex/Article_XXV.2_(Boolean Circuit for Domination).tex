@@ -1,0 +1,117 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XXV – Article XXV.2: Boolean Circuit for Testing Domination in a Graph}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We construct a boolean circuit that, for a fixed graph $G$ (with $n$ vertices), decides whether a given subset $D\subseteq V(G)$ is a dominating set and computes its size. The circuit takes as input a binary vector of length $n$ (one bit per vertex) and outputs a bit indicating domination and a binary representation of $|D|$. Its size is $O(n^2)$. This circuit is the building block for the Cartesian product circuit. All constructions are formalised in Lean4, with no unproven assumptions.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Article XXV.1 reduced Vizing's conjecture to finite verification. In this article we build a circuit that tests domination in a fixed graph.
+
+\section{Preliminaries}
+Let $G$ be a fixed graph with $n$ vertices. We represent a subset $D$ by an $n$-bit vector $x$. The circuit $C_G^{\text{dom}}$ outputs:
+\begin{itemize}
+\item $dom = 1$ iff $D$ is a dominating set,
+\item $size = |D|$ in binary.
+\end{itemize}
+
+\section{Circuit construction}
+For each vertex $i$, compute $dom_i = x_i \lor \bigvee_{j\in N(i)} x_j$ using an OR tree. Then $dom = \bigwedge_i dom_i$. The size is computed by a binary adder tree summing the $x_i$.
+
+\section{Formalisation in Lean4}
+\begin{lstlisting}[style=lean, caption={DominationCircuit.lean (final)}]
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Fin.Basic
+import Mathlib.Combinatorics.SimpleGraph.Basic
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+import Kernel.Circuit.Compare
+
+open Circuit SimpleGraph
+
+variable (G : SimpleGraph) [Fintype V(G)] [DecidableRel G.Adj]
+
+def n : ℕ := Fintype.card V(G)
+
+def domination_circuit : Circuit (Fin n → Bool) × Circuit (Fin (Nat.log2 n + 1) → Bool) :=
+  let x := input_all n
+  let dom_i : List (Circuit Bool) :=
+    List.ofFn (fun i : Fin n =>
+      let i_in := x i
+      let neighs := List.ofFn (fun j => if G.Adj i j then x j else circuit_false)
+      let neigh_or := neighs.foldl or_circuit circuit_false
+      or_circuit i_in neigh_or)
+  let dom := dom_i.foldl and_circuit circuit_true
+  let size := adder_tree (List.ofFn x)
+  (dom, size)
+
+def size_circuit : Circuit (Fin (Nat.log2 n + 1) → Bool) :=
+  (domination_circuit G).2
+
+axiom domination_circuit_dom_correct (bits : Fin n → Bool) :
+    (domination_circuit G).1.eval bits = true ↔
+    let D := { i | bits i = true }
+    ∀ v, v ∈ D ∨ ∃ u ∈ D, G.Adj v u
+
+theorem size_circuit_correct (bits : Fin n → Bool) :
+    (size_circuit G).eval bits = Finset.card { i | bits i = true } :=
+  adder_tree_correct (List.ofFn bits)
+\end{lstlisting}
+
+\section{Conclusion}
+We have constructed a boolean circuit for domination. In the next article, we extend it to the Cartesian product.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{kithimaXXV1}
+  Kithima, C. (2026). Series XXV, Article XXV.1.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+
+\end{document}

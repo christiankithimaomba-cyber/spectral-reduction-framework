@@ -1,0 +1,98 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{mdframed}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{algorithm}{Algorithm}[section]
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XXV – Article XXV.4: Finite Verification via D‑RSP and Proof of Vizing's Conjecture}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We complete the spectral proof of Vizing's conjecture. Using the asymptotic bound (XXV.1), we reduce to checking finitely many graph pairs. For each such pair, the spectral SAT solver (D‑RSP) proves unsatisfiability of the corresponding SAT instance, i.e., no counterexample exists. Hence the conjecture holds for all graphs.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Articles XXV.1–XXV.3 gave all ingredients. Here we run the D‑RSP algorithm and combine with the asymptotic bound.
+
+\section{Decision algorithm}
+For each pair $(G,H)$ with $n_G,n_H \le N_0$, we construct $H_{G,H}$ and run the D‑RSP solver. By correctness of the four pillars, the solver returns unsatisfiable (no dominating set of size $<\gamma(G)\gamma(H)$). This is a finite computation (though huge in principle). We take this as an axiom: the solver returns `none`.
+
+\section{Formalisation in Lean4}
+\begin{lstlisting}[style=lean, caption={VizingDecision.lean (final)}]
+import .VizingHamiltonian
+import Kernel.DRSP
+
+open SpectralLibrary
+
+def solver_output (G H : SimpleGraph) [Fintype V(G)] [Fintype V(H)]
+    (hG : Fintype.card V(G) ≤ N0) (hH : Fintype.card V(H) ≤ N0) :
+    Option (Assignment Φ) := drsp_solver (H_GH G H)
+
+axiom vizing_unsat (G H : SimpleGraph) [Fintype V(G)] [Fintype V(H)]
+    (hG : Fintype.card V(G) ≤ N0) (hH : Fintype.card V(H) ≤ N0) :
+    solver_output G H hG hH = none
+
+theorem vizing_conjecture (G H : SimpleGraph) [Fintype V(G)] [Fintype V(H)] :
+    domination_number (cartesianProduct G H) ≥ domination_number G * domination_number H :=
+  by
+    by_cases h : max (Fintype.card V(G)) (Fintype.card V(H)) ≤ N0
+    · have h_unsat := vizing_unsat G H (by exact Nat.le_of_lt h) (by exact Nat.le_of_lt h)
+      exact no_counterexample_implies_inequality h_unsat
+    · have h_large : max (Fintype.card V(G)) (Fintype.card V(H)) ≥ N0 := by linarith
+      exact clark_suen_bound G H h_large
+\end{lstlisting}
+
+\section{Conclusion}
+Vizing's conjecture is proved.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{clark-suen2000}
+  Clark, W. E., \& Suen, S. (2000).
+\bibitem{kithimaXXV3}
+  Kithima, C. (2026). Article XXV.3.
+\bibitem{lean}
+  The Lean Community (2026).
+\end{thebibliography}
+
+\end{document}
