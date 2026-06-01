@@ -1,0 +1,12 @@
+/-
+MainRH.lean – Fichier principal pour l'Hypothèse de Riemann.
+-/
+
+import .RiemannFinal
+
+open SpectralLibrary
+
+#check riemann_hypothesis
+
+-- Audit des axiomes
+#print axioms riemann_hypothesis
