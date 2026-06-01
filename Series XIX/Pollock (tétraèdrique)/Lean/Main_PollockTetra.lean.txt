@@ -1,0 +1,9 @@
+/- XIX_MainPollockTetra.lean - Fichier principal. -/
+
+import XIX_PollockTetraFinal
+
+#eval "Pollock tetrahedral conjecture: all modules loaded."
+
+#check pollock_tetrahedral_conjecture
+
+#print axioms pollock_tetrahedral_conjecture
