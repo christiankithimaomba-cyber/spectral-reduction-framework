@@ -1,1 +1,4 @@
-Lean code
+# Pour tous les fichiers .lean.txt dans l'arborescence
+find . -name "*.lean.txt" -type f | while read f; do
+    mv "$f" "${f%.lean.txt}.lean"
+done
