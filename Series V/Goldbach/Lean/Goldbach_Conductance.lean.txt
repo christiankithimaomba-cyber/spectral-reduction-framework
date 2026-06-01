@@ -1,0 +1,28 @@
+/- 
+GoldbachConductance.lean – Borne polynomiale sur la conductance et le trou spectral.
+-/
+
+import .GoldbachConfig
+import Kernel.DiscreteCheeger
+
+open Kernel.SpectralLibrary
+
+theorem goldbach_conductance (N : ℕ) (λ ε : ℝ) (hε : 0 < ε) :
+    let H := GoldbachHamiltonian N λ ε hε
+    conductance H ≥ ε / (4 * N) :=
+  by
+    let ψ := ground_state (GoldbachSpectralProblem N λ ε hε)
+    have hψ := perron_frobenius (GoldbachSpectralProblem N λ ε hε)
+    obtain ⟨_, hpos, hλ, hnorm, _⟩ := hψ
+    have h_width := DiscreteCheeger.path_topological_width (2*N+1) ε hε ψ hpos hnorm
+    exact conductance_from_topological_width H ψ h_width (by simp [GoldbachHamiltonian])
+
+theorem goldbach_spectral_gap (N : ℕ) (λ ε : ℝ) (hε : 0 < ε) :
+    let H := GoldbachHamiltonian N λ ε hε
+    spectral_gap H ≥ ε^2 / (32 * N^4) :=
+  by
+    let H0 := GoldbachHamiltonian N λ ε hε
+    have h_cond := goldbach_conductance N λ ε hε
+    have h_offdiag_nonneg : ∀ i j, i ≠ j → 0 ≤ H0 i j := by
+      intro i j h; simp [GoldbachHamiltonian, adjacencyMatrixOf]; split_ifs <;> linarith
+    exact DiscreteCheeger.Cheeger_inequality H0 h_offdiag_nonneg h_cond
