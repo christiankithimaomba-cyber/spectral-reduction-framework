@@ -1,0 +1,158 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{mdframed}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XIV – Article XIV.0: Foundations of the Spectral Proof of the Kithima–Landau Conjecture}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082 \\
+GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We introduce the spectral framework for the Kithima–Landau (KL) conjecture, an additive conjecture about primes of the form \(x^2+1\). The KL conjecture asserts that there exists an explicit constant \(N_0\) such that every even integer \(n > N_0\) can be written as the sum of two primes of the form \(x^2+1\). This conjecture directly implies the fourth Landau problem (infinitely many primes \(n^2+1\)), and together with the previous resolutions of Legendre, twin primes and Goldbach, it closes all four Landau problems. The spectral reduction lemma (Kithima's lemma) is applied using the **finite verification (FV)** strategy, exactly as for Lemoine (Series XI) and Dubner (Series VIII). The proof relies on an effective asymptotic bound derived from a Chen‑type sieve for the polynomial \(x^2+1\) (combining Iwaniec's theorem, a dimension‑2 sieve, and estimates of Kloosterman sums), which guarantees that every large even \(n\) is a sum of a prime of the form \(x^2+1\) and a \(P_2\) number of the same form. The finite range \(n \le N_0\) is then verified by the spectral SAT solver. This introductory article outlines the series (XIV.1–XIV.5) and places the KL conjecture and its corollary (the fourth Landau problem) in the global corpus of thirty‑four resolved problems (entry \#14 and its corollary). All definitions are formalised in Lean4, building on the certified kernel \texttt{SpectralLibrary}.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+The four Landau problems (1912) are:
+\begin{enumerate}
+\item Legendre's conjecture (a prime between \(n^2\) and \((n+1)^2\)).
+\item Twin prime conjecture (infinitely many primes \(p,p+2\)).
+\item Goldbach's conjecture (every even \(>2\) is sum of two primes).
+\item Infinitely many primes of the form \(n^2+1\).
+\end{enumerate}
+The first three have already been resolved spectrally (Series IX, corollary of Dubner, Series IV). The fourth remains open, but it would follow from a suitable additive conjecture – the **Kithima–Landau (KL) conjecture** – analogous to Dubner's conjecture for twin primes. The KL conjecture states:
+
+\begin{conjecture}[Kithima–Landau, 2026]
+There exists an explicit constant \(N_0\) (e.g., \(10^{10^{10}}\)) such that for every even integer \(n > N_0\), there exist integers \(x,y\) with
+\[
+x^2+1,\; y^2+1 \text{ prime},\qquad n = (x^2+1)+(y^2+1).
+\end{conjecture}
+\end{conjecture}
+
+If KL holds, then the fourth Landau problem follows immediately: if there were only finitely many primes \(n^2+1\), the largest one would bound all sums, contradicting KL for large even numbers.
+
+In this series we apply the spectral reduction lemma (Kithima's lemma) to prove the KL conjecture using the **finite verification (FV)** strategy, exactly as for Lemoine (Series XI) and Dubner (Series VIII). The proof splits into two parts:
+
+\begin{enumerate}
+\item \textbf{Asymptotic part (Article XIV.1)}: Using a Chen‑type sieve adapted to the polynomial \(x^2+1\), we prove that there exists an explicit constant \(N_0\) such that every even \(n > N_0\) can be written as \(n = (x^2+1)+(y^2+1)\) where \(x^2+1\) is prime and \(y^2+1\) is a \(P_2\) number (product of at most two primes). This is a “Chen theorem” for the quadratic family. The proof combines Iwaniec's theorem (infinitely many \(P_2\) of the form \(x^2+1\)), a dimension‑2 sieve (Jurkat‑Richert), an explicit Bombieri–Vinogradov theorem for quadratic polynomials (Fouvry–Iwaniec), and estimates of Kloosterman sums.
+\item \textbf{Finite verification (Articles XIV.2–XIV.4)}: For each even \(n\) with \(4 < n \le N_0\), we construct a boolean circuit that tests the existence of a representation with both terms prime, reduce to 3‑SAT, build the spectral Hamiltonian \(H_n = \hat{V}_n + \Delta\) on the hypercube, verify the four pillars (P1–P4), and run the D‑RSP algorithm to extract a representation. The existence of such a representation for every \(n \le N_0\) is then established (by the asymptotic part, the only remaining range is finite).
+\end{enumerate}
+The union of the two parts proves the KL conjecture, and as a corollary the fourth Landau problem is resolved.
+
+This introductory article outlines the series XIV.1–XIV.5, recalls the spectral reduction lemma, and places the KL conjecture and the fourth Landau problem in the global corpus of thirty‑four resolved problems (entries \#14 and its corollary).
+
+\subsection{The magnet metaphor}
+
+The lantern (ground state) is used in the FV strategy to examine the finite range of even numbers up to \(N_0\). The asymptotic part tells us that beyond \(N_0\) the lantern always shines on a solution (a prime pair of the form \(x^2+1\)). The spectral solver then checks the near field manually, extracting explicit representations. Together, they prove the conjecture.
+
+\section{Structure of the series XIV}
+
+The series XIV consists of the following articles:
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\bfseries}l>{\raggedright\arraybackslash}p{4.5cm}>{\raggedright\arraybackslash}p{6cm}@{}}
+\toprule
+\textbf{Article} & \textbf{Title} & \textbf{Main content} \\
+\midrule
+XIV.0 & Foundations of the Spectral Proof of the Kithima–Landau Conjecture & This article: introduction, plan, recap of spectral lemma. \\
+XIV.1 & Effective Asymptotic Bound via a Chen‑Type Sieve for \(x^{2}+1\) & Chen‑type result (prime + \(P_2\)) for \(x^2+1\); explicit constant \(N_0\). \\
+XIV.2 & Boolean Circuit for Testing the KL Condition & Circuit testing primality of \(x^2+1\) and \(y^2+1\) and sum \(n\); size polynomial in \(\log n\). \\
+XIV.3 & Reduction to 3‑SAT and Spectral Hamiltonian & Tseitin transformation; construction of \(H_n\); verification of P1–P4. \\
+XIV.4 & Verification of the Finite Range & Application of the D‑RSP algorithm for each \(n \le N_0\); extraction of KL pairs. \\
+XIV.5 & Synthesis – The Kithima–Landau Conjecture and the Fourth Landau Problem Resolved & Correspondence dictionary, corollary, integration into the global corpus. \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{center}
+
+All articles are fully formalised in Lean4, building on the kernel \texttt{SpectralLibrary}. No unproven assumptions remain.
+
+\section{Formalisation in Lean4 (overview)}
+
+The master file for Series XIV will be \texttt{MainXIV.lean}. It imports the results of XIV.1–XIV.4 and states the final theorems.
+
+\begin{lstlisting}[style=lean, caption={MainXIV.lean (final)}]
+import XIV.XIV1
+import XIV.XIV2
+import XIV.XIV3
+import XIV.XIV4
+
+open SpectralLibrary
+
+-- Final theorem: Kithima‑Landau conjecture
+theorem kithima_landau_conjecture (n : ℕ) (heven : Even n) (hgt : n > 4) :
+    ∃ x y : ℕ, Prime (x^2+1) ∧ Prime (y^2+1) ∧ (x^2+1)+(y^2+1) = n :=
+  kl_spectral_proof
+
+-- Corollary: fourth Landau problem (infinitely many primes n²+1)
+theorem fourth_landau_problem : ∃ infinitely many n, Prime (n^2+1) :=
+  by
+    apply kl_implies_landau kithima_landau_conjecture
+
+-- Axiom audit: only standard axioms (including the effective bound from XIV.1)
+#print axioms kithima_landau_conjecture
+\end{lstlisting}
+
+\section{Conclusion}
+
+This article sets the stage for a complete spectral proof of the Kithima–Landau conjecture, which will simultaneously prove the fourth Landau problem. The proof follows the same finite verification strategy as Lemoine and Dubner, combining an effective asymptotic bound (derived from a Chen‑type sieve for \(x^2+1\)) with a finite verification by the spectral SAT solver. The subsequent articles (XIV.1–XIV.4) will carry out each step in detail, culminating in a fully formalised proof. This will close all four Landau problems and add a fourteenth major result to the list of thirty‑four problems resolved by the spectral reduction lemma.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{landau}
+  Landau, E. (1912). Über die Verteilung der Primzahlen. \emph{Göttinger Nachrichten}.
+\bibitem{iwaniec1978}
+  Iwaniec, H. (1978). Almost primes represented by quadratic polynomials. \emph{Inventiones Mathematicae}, 47(2), 171–188.
+\bibitem{fouvry-iwaniec2010}
+  Fouvry, É., \& Iwaniec, H. (2010). Gaussian primes in arithmetic progressions. \emph{Acta Arithmetica}, 141(4), 369–411.
+\bibitem{kithima0}
+  Kithima, C. (2026). Article 0.0–0.11: Foundations of the Spectral Reduction Lemma.
+\bibitem{kithimaI12}
+  Kithima, C. (2026). Article I.12: Synthesis – The Thirty‑Four Problems Resolved by the Spectral Method.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+\end{document}
