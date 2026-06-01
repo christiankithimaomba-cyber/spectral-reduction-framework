@@ -1,0 +1,12 @@
+/-
+Main.lean – Point d'entrée pour la série XXVI.
+-/
+
+import .ErdosHajnalSynthesis
+
+open SpectralLibrary
+
+#check erdos_hajnal_conjecture
+
+-- Audit des axiomes
+#print axioms erdos_hajnal_conjecture
