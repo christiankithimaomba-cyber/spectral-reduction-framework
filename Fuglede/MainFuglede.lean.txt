@@ -1,9 +1,0 @@
-/- XXXV_MainFuglede.lean - Fichier principal. -/
-
-import XXXV_Fuglede_Synthesis
-
-#eval "Fuglede conjecture (dimensions 1-4): all modules loaded."
-
-#check fuglede_conjecture_proved
-
-#print axioms fuglede_conjecture_proved
