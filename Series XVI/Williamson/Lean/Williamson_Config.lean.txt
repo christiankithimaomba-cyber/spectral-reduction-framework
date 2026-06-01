@@ -1,0 +1,60 @@
+/- XVI_WilliamsonConfig.lean - Espace de configuration, potentiel, hamiltonien pour la conjecture de Williamson. -/
+
+import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Combinatorics.SimpleGraph.Hypercube
+import Kernel.SpectralLibrary
+
+open Matrix
+
+namespace SeriesXVI.Williamson
+
+variable (m : ℕ) (hm : m ≥ 1)
+
+/-- Configuration : quatre matrices m×m d’entrées booléennes (0 pour -1, 1 pour +1). -/
+def Config := Fin m → Fin m → Bool × Bool × Bool × Bool
+
+/-- Nombre total de bits : 4*m^2. -/
+def N := 4 * m^2
+
+/-- Graphe sous-jacent : hypercube de dimension N (connexe, degré N). -/
+def graph : SimpleGraph (Config m) := SimpleGraph.hypercube (Fin N)
+
+lemma graph_connected : graph.Connected := SimpleGraph.hypercube_connected _
+
+/-- Prédicat "être un ensemble de matrices de Williamson". -/
+def is_williamson (σ : Config m) : Prop :=
+  let A (i j) := (σ i j).1; let B (i j) := (σ i j).2
+  let C (i j) := (σ i j).3; let D (i j) := (σ i j).4
+  let to_int (b : Bool) : ℤ := if b then 1 else -1
+  let M A : Matrix m m ℤ := Matrix.of (fun i j => to_int (A i j))
+  let MA := M A; let MB := M B; let MC := M C; let MD := M D
+  (∀ i j, MA i j = MA j i) ∧ (∀ i j, MB i j = MB j i) ∧
+  (∀ i j, MC i j = MC j i) ∧ (∀ i j, MD i j = MD j i) ∧
+  (MA * MB = MB * MA) ∧ (MA * MC = MC * MA) ∧ (MA * MD = MD * MA) ∧
+  (MB * MC = MC * MB) ∧ (MB * MD = MD * MB) ∧ (MC * MD = MD * MC) ∧
+  (MA * MA + MB * MB + MC * MC + MD * MD = (4 * m) • 1)
+
+/-- Décidabilité (quantification finie). -/
+instance is_williamson_decidable : Decidable (is_williamson σ) :=
+  decidable_of_iff' (by infer_instance) Iff.rfl
+
+/-- Potentiel diagonal : 0 pour un ensemble de Williamson, N² sinon. -/
+def potential (σ : Config m) : ℝ := if is_williamson σ then 0 else (N : ℝ)^2
+
+/-- Matrice d’adjacence de l’hypercube. -/
+def adjacency : Matrix (Config m) (Config m) ℝ := adjacencyMatrixOf graph
+
+/-- Hamiltonien spectral H = V + Δ. -/
+def hamiltonian : Matrix (Config m) (Config m) ℝ := diagonal potential + adjacency
+
+/-- Instance de SpectralProblem pour utiliser le kernel. -/
+def spectral_problem : Kernel.SpectralLibrary.SpectralProblem (Config m) :=
+  { potential := potential
+    graph := graph
+    epsilon := 1
+    heps := by norm_num
+    connected := graph_connected }
+
+end SeriesXVI.Williamson

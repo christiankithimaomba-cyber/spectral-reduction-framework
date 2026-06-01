@@ -1,0 +1,25 @@
+/- XVI_WilliamsonP2.lean - Pilier P2 : trou spectral constant via Kithima Bridge. -/
+
+import XVI_WilliamsonP1
+import Kernel.KithimaBridge
+
+open Kernel.SpectralLibrary
+
+namespace SeriesXVI.Williamson
+
+variable (m : ℕ) (hm : m ≥ 1)
+
+def H := hamiltonian m
+def Δ := adjacency m
+def V := diagonal (potential m)
+
+lemma V_nonneg : ∀ σ, potential m σ ≥ 0 := by
+  intro σ; rw [potential]; split_ifs <;> linarith
+
+lemma Δ_off_nonneg : ∀ i j, i ≠ j → Δ i j ≥ 0 := by
+  intro i j h; simp [Δ]; split_ifs <;> linarith
+
+theorem williamson_spectral_gap : spectral_gap H ≥ 2 :=
+  kithima_bridge V V_nonneg Δ Δ_off_nonneg 1 (by norm_num) (hypercube_spectral_gap (N m))
+
+end SeriesXVI.Williamson
