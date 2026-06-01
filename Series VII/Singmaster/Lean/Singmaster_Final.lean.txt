@@ -1,0 +1,26 @@
+/-
+SingmasterFinal.lean – Preuve finale de la conjecture de Singmaster.
+-/
+
+import .SingmasterExtraction
+import .SingmasterSAT
+
+open SpectralLibrary
+
+theorem singmaster_conjecture (t : ℕ) (ht : t > 1) : multiplicity t ≤ 10 :=
+  by
+    by_cases h : t ≤ T0
+    · have h_m := multiplicity_finite t h
+      have h_max := max_multiplicity_finite
+      exact le_trans (by exact h_m) (by linarith [h_max])
+    · have h_gt : t > T0 := by linarith
+      -- Pour t > T0, le théorème de de Weger donne que les seules solutions sont k=1 ou k=n-1.
+      have h2 : multiplicity t ≤ 2 := by
+        apply Finset.card_le_of_forall_subset
+        intro a ha
+        simp at ha
+        obtain ⟨n,k, hk, hkn, heq⟩ := ha
+        cases deweger_threshold t h_gt n k hk hkn heq
+        · left; rw [choose_one] at heq; exact ⟨n,1⟩
+        · right; rw [choose_one, choose_self] at heq; exact ⟨n,n-1⟩
+      exact le_trans h2 (by linarith)
