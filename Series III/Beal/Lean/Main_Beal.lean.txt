@@ -1,0 +1,12 @@
+/-
+MainBeal.lean – Fichier principal pour la conjecture de Beal.
+-/
+
+import .BealFinal
+
+open SpectralLibrary
+
+#check beal_conjecture
+
+-- Audit des axiomes
+#print axioms beal_conjecture
