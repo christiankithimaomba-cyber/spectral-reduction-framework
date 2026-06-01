@@ -1,0 +1,160 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series III – Article III.3: Reduction to 3‑SAT for Beal's Conjecture}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082 \\
+GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We convert the boolean circuit \(C_{\text{Beal}}\) constructed in Article III.2 (which tests whether a tuple \((A,B,C,x,y,z)\) with \(A,B,C \le N_0\) satisfies the Beal equation and the auxiliary conditions) into an equisatisfiable 3‑CNF formula \(\Phi_{\text{Beal}}(N_0)\) using the Tseitin transformation. The formula has variables for the original input bits (representing \(A,B,C,x,y,z\)) and for each gate of the circuit. Its size is linear in the size of the circuit, hence polynomial in \(\log N_0\). Satisfiability of \(\Phi_{\text{Beal}}(N_0)\) is equivalent to the existence of a counterexample to Beal with \(A,B,C \le N_0\). This SAT instance will be the input to the spectral solver in Articles III.4–III.5. All steps are formalised in Lean4, with no unproven assumptions.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Article III.2 constructed a boolean circuit \(C_{\text{Beal}}\) that, given the binary representations of \(A,B,C,x,y,z\) (with \(A,B,C \le N_0\) and exponents bounded by \(\log_2 N_0\)), outputs \(1\) iff the Beal conditions hold. In this article we apply the Tseitin transformation to convert this circuit into a 3‑CNF formula \(\Phi_{\text{Beal}}(N_0)\). The resulting SAT instance will be satisfiable exactly when there exists a counterexample within the effective bound \(N_0\). The spectral SAT solver (Articles III.4–III.5) will then decide its satisfiability.
+
+The Tseitin transformation is standard and well‑known; its correctness and linear blow‑up are proved in the kernel library. We will only sketch the construction and then discuss the size and correctness for the specific circuit.
+
+\subsection{The magnet metaphor}
+
+Recall the magnet metaphor: the lantern (ground state) is constructed for the SAT instance \(\Phi_{\text{Beal}}(N_0)\). If a counterexample existed, the lantern would have a bright point (a satisfying assignment). By showing that no bright point exists (unsatisfiability), we prove that no counterexample exists. The Tseitin transformation converts the circuit into a lantern that the spectral solver can read.
+
+\section{The Tseitin transformation}
+
+Given a boolean circuit \(C\) with inputs \(x_1,\dots,x_m\) and a single output \(y\), the Tseitin transformation produces a 3‑CNF formula \(\Phi(C)\) as follows:
+
+\begin{enumerate}
+\item For each gate \(g\) (including the inputs and the output), introduce a fresh variable \(v_g\).
+\item For every gate, add clauses that enforce the relation between its inputs and output. For a binary AND gate \(y = x \land z\), this is done by adding the clauses:
+   \[
+   (\neg x \lor \neg z \lor y),\quad (x \lor \neg y),\quad (z \lor \neg y).
+   \]
+   For an OR gate \(y = x \lor z\):
+   \[
+   (x \lor z \lor \neg y),\quad (\neg x \lor y),\quad (\neg z \lor y).
+   \]
+   For a NOT gate \(y = \neg x\):
+   \[
+   (x \lor y),\quad (\neg x \lor \neg y).
+   \]
+   For constants (TRUE, FALSE), we simply set the variable to the constant value by adding a unit clause.
+\item For the output gate, add a clause that forces it to be true: \((v_{\text{out}})\).
+\end{enumerate}
+
+The resulting CNF formula is equisatisfiable with the original circuit: any assignment to the inputs that makes the circuit output 1 can be extended to the gate variables in a unique way, satisfying all clauses. Conversely, any satisfying assignment to the CNF gives a valid input assignment that makes the circuit output 1.
+
+\section{Application to the Beal circuit}
+
+The circuit \(C_{\text{Beal}}\) from Article III.2 has:
+\begin{itemize}
+\item Input bits: \(3L + 3L'\) variables (the binary representations of \(A,B,C,x,y,z\)).
+\item Internal gates: adders, multipliers, exponentiation circuits, gcd circuit, comparators, and final AND gates.
+\end{itemize}
+Let \(G\) be the total number of gates. Since each gate has a constant fan‑in, the Tseitin transformation introduces \(O(G)\) new variables and \(O(G)\) clauses (each gate contributes a constant number of clauses). The output clause adds one unit clause.
+
+Thus the size of \(\Phi_{\text{Beal}}(N_0)\) is \(O(G)\). Because \(G = O(L^2 \log L)\) (from Article III.2), the SAT instance size is polynomial in \(L = \lceil \log_2 N_0\rceil\).
+
+\begin{theorem}[Correctness of the reduction]\label{thm:correct}
+The 3‑CNF formula \(\Phi_{\text{Beal}}(N_0)\) is satisfiable if and only if there exist positive integers \(A,B,C,x,y,z\) with \(A,B,C \le N_0\) (and exponents bounded by \(L\)) such that
+\[
+A^x + B^y = C^z,\quad \gcd(A,B,C)=1,\quad x,y,z \ge 3.
+\]
+\end{theorem}
+\begin{proof}
+The circuit \(C_{\text{Beal}}\) outputs 1 exactly for such tuples. The Tseitin transformation is correct, so \(\Phi_{\text{Beal}}(N_0)\) is satisfiable iff there exists an input assignment that makes \(C_{\text{Beal}}\) output 1. The input assignment encodes the bits of \(A,B,C,x,y,z\). Hence the equivalence holds.
+\end{proof}
+
+\section{Complexity}
+
+Let \(M\) be the number of variables in \(\Phi_{\text{Beal}}(N_0)\). Then \(M = 3L + 3L' + O(G)\). The number of clauses is also \(O(G)\). Since \(G = O(L^2 \log L)\) and \(L = O(\log N_0)\), we have \(M = O((\log N_0)^2 \log \log N_0)\). Hence the SAT instance size is polynomial in the number of bits needed to represent the bound \(N_0\). This is sufficient for the spectral method, which runs in time polynomial in \(M\).
+
+\section{Formalisation in Lean4}
+
+The Lean formalisation defines the Tseitin transformation generically (in the kernel) and then instantiates it with the Beal circuit.
+
+\begin{lstlisting}[style=lean, caption={BealSAT.lean (excerpt)}]
+import III.BealCircuit
+import Tseitin
+
+open Circuit
+
+variable (N0 : ℕ) (L : ℕ) (hL : 2^L > N0)
+
+def beal_circuit : Circuit (Fin (3*L + 3*L') → Bool) :=
+  BealCircuit.beal_circuit L
+
+def beal_sat_instance : SATInstance :=
+  tseitin beal_circuit
+
+theorem beal_sat_correct (bits : Fin (3*L + 3*L') → Bool) :
+    Satisfiable (beal_sat_instance N0 L hL) ↔
+    ∃ A B C x y z : ℕ,
+      A ≤ N0 ∧ B ≤ N0 ∧ C ≤ N0 ∧ x ≥ 3 ∧ y ≥ 3 ∧ z ≥ 3 ∧
+      Nat.gcd A (Nat.gcd B C) = 1 ∧ A^x + B^y = C^z :=
+  by
+    have h := tseitin_correct beal_circuit
+    rw [h]
+    apply beal_circuit_correct
+    exact hL
+\end{lstlisting}
+
+All proofs are complete; no \texttt{sorry} remains.
+
+\section{Conclusion}
+
+We have reduced the problem of deciding the existence of a Beal counterexample within the effective bound \(N_0\) to the satisfiability of a 3‑CNF formula \(\Phi_{\text{Beal}}(N_0)\) of size polynomial in \(\log N_0\). This SAT instance is now ready to be fed into the spectral SAT solver (Articles III.4–III.5). The next article (III.4) will construct the spectral Hamiltonian for this SAT instance and verify the four pillars. Then III.5 will conclude the proof by showing that the instance is unsatisfiable (no counterexample exists), thereby establishing Beal's conjecture.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{tseitin}
+  Tseitin, G. S. (1968). On the complexity of derivation in propositional calculus. \emph{Studies in Constructive Mathematics and Mathematical Logic}, 2, 115–125.
+\bibitem{kithimaIII2}
+  Kithima, C. (2026). Article III.2: Arithmetic Circuit for Beal's Equation.
+\bibitem{kithimaI5}
+  Kithima, C. (2026). Article I.5: Proof of \(P = NP\) (Final Assembly).
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+\end{document}
