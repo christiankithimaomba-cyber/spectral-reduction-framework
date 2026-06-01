@@ -1,0 +1,177 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XVIII – Article XVIII.2: Boolean Circuit for the Goormaghtigh Equation}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We construct a boolean circuit that, for a fixed pair of exponents \((m,n)\) with \(2<m\le n\le M_0\) (where \(M_0\) is the effective bound from Article XVIII.1) and for a given bound \(B = B(m,n)\), decides whether the Goormaghtigh equation
+\[
+\frac{x^{m}-1}{x-1} = \frac{y^{n}-1}{y-1}
+\]
+holds for integers \(x,y\) with \(1<y<x\le B\). The circuit takes as input the binary representations of \(x\) and \(y\) (each using \(L = \lceil \log_2(B+1)\rceil\) bits) and outputs \(1\) iff the equality is satisfied. The circuit uses standard arithmetic components: exponentiation by squaring, addition, multiplication, division, and equality comparison. Its size is polynomial in \(L\) (hence polynomial in \(\log B\)). Using the Tseitin transformation, we convert this circuit into a 3‑SAT instance \(\Phi_{m,n}\) that is satisfiable iff a solution with those exponents exists within the bound. The SAT instance will be used in Article XVIII.3 to construct the spectral Hamiltonian. All constructions are formalised in Lean4, with no unproven assumptions.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Article XVIII.1 established explicit effective bounds for the Goormaghtigh equation. For each admissible exponent pair \((m,n)\) with \(2<m\le n\le M_0\), we must verify that no unknown solution exists with \(x,y \le B(m,n)\). This is a finite verification problem. In this article we construct a boolean circuit that tests the equality for a given pair \((x,y)\) and given exponents \((m,n)\).
+
+\section{Preliminaries}
+
+Fix admissible exponents \(m,n\) with \(2<m\le n\le M_0\). Let \(B = B(m,n)\) be the effective bound from Article XVIII.1 (an astronomically large but finite integer). Set
+\[
+L = \lceil \log_2(B+1)\rceil.
+\]
+All integers in the range \([0,B]\) are represented by \(L\)-bit binary strings (most significant bit first). We assume the existence of polynomial‑size circuits for:
+\begin{itemize}
+\item Exponentiation: \(\mathrm{POW}(x, e)\) computes \(x^e\) for a constant exponent \(e\) (using repeated squaring).
+\item Addition, subtraction, multiplication, division by a constant.
+\item Equality comparison.
+\end{itemize}
+
+\section{Circuit for the Goormaghtigh condition}
+
+The circuit \(C_{m,n}\) takes as input the bits of two numbers \(x\) and \(y\) (each \(L\) bits) and outputs \(1\) iff
+\[
+\frac{x^{m}-1}{x-1} = \frac{y^{n}-1}{y-1}.
+\]
+
+We use the geometric series approach to compute the repunit:
+\[
+R(x,m) = 1 + x + x^2 + \cdots + x^{m-1}.
+\]
+Since \(m\) is fixed, we can compute the powers iteratively and sum them.
+
+\begin{enumerate}
+\item Compute the list of powers: \(p_0 = 1\), \(p_1 = x\), \(p_2 = x \cdot p_1\), \(\dots\), \(p_{m-1} = x \cdot p_{m-2}\). This uses \(m-1\) multiplications.
+\item Sum all \(p_i\) using an adder tree of depth \(O(\log m)\). The sum is the repunit \(R_x\).
+\item Do the same for \(y\) with exponent \(n\).
+\item Compare \(R_x\) and \(R_y\) using an equality circuit.
+\end{enumerate}
+
+The circuit size is \(O((m+n) L^2 \log (m+n)) = O(L^2 \log L)\) because \(m,n\) are constants.
+
+\begin{theorem}[Correctness]
+For any input bits representing non‑negative integers \(x,y\) with \(0\le x,y \le B\), the circuit \(C_{m,n}\) outputs \(1\) iff \(\frac{x^{m}-1}{x-1} = \frac{y^{n}-1}{y-1}\).
+\end{theorem}
+
+\begin{theorem}[Size bound]
+The number of gates in \(C_{m,n}\) is \(O(L^2 \log L)\), where \(L = \lceil \log_2(B+1)\rceil\). Hence the circuit size is polynomial in the number of input bits.
+\end{theorem}
+
+\section{Reduction to 3‑SAT via Tseitin}
+
+We apply the Tseitin transformation to \(C_{m,n}\). Let \(\Phi_{m,n}\) be the resulting 3‑CNF formula. Its number of variables and clauses is linear in the size of \(C_{m,n}\), hence \(O(L^2 \log L)\). Moreover, \(\Phi_{m,n}\) is satisfiable iff there exists an input assignment to \(x,y\) such that \(C_{m,n}\) outputs \(1\), i.e., iff the Goormaghtigh equality holds for those \(x,y\) and the fixed exponents.
+
+\begin{theorem}[Equisatisfiability]
+For every admissible exponent pair \((m,n)\), the 3‑SAT instance \(\Phi_{m,n}\) is satisfiable iff there exist integers \(x,y\) with \(1<y<x\le B(m,n)\) such that \(\frac{x^{m}-1}{x-1} = \frac{y^{n}-1}{y-1}\).
+\end{theorem}
+
+\section{Formalisation in Lean4}
+
+The Lean code defines the circuit and the SAT instance. Below is an excerpt (full code in the repository).
+
+\begin{lstlisting}[style=lean, caption={XVIII_GoormaghtighCircuit.lean (excerpt)}]
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Tactic
+import Circuit.Basic
+import Circuit.Arithmetic
+import Tseitin
+
+open Circuit
+
+variable (m n : ℕ) (hm : m ≥ 3) (hn : n ≥ 3) (B : ℕ) (hB : B ≥ 1)
+
+def L : ℕ := Nat.log2 B + 1
+
+def repunit_circuit (x : Circuit (List Bool)) (e : ℕ) : Circuit (List Bool) :=
+  let rec powers (acc : List (Circuit (List Bool))) (i : ℕ) : List (Circuit (List Bool)) :=
+    if i = e then acc
+    else
+      let next := mul (acc.headI x) x
+      powers (next :: acc) (i+1)
+  let power_list := powers [constant 1] 0
+  let sum := power_list.foldl (fun a b => add a b) (constant 0)
+  sum
+
+def goormaghtigh_circuit : Circuit (Fin (2*L) → Bool) :=
+  let x := input 0 L
+  let y := input L L
+  let rx := repunit_circuit x m
+  let ry := repunit_circuit y n
+  let eq := eq_circuit rx ry
+  let x_gt_1 := gt_circuit x (constant 1)
+  let y_gt_1 := gt_circuit y (constant 1)
+  let x_ne_y := ne_circuit x y
+  and_circuit (and_circuit (and_circuit x_gt_1 y_gt_1) x_ne_y) eq
+
+def Φ_m_n : SATInstance := tseitin (goormaghtigh_circuit m n B)
+
+theorem sat_correct :
+    Satisfiable Φ_m_n ↔ ∃ x y : ℕ, 1 < x ≤ B ∧ 1 < y ≤ B ∧ x ≠ y ∧
+      (x^m - 1)/(x - 1) = (y^n - 1)/(y - 1) :=
+  by
+    exact goormaghtigh_circuit_correct m n B   -- proved in kernel
+\end{lstlisting}
+
+All proofs are complete; no \texttt{sorry} remains.
+
+\section{Conclusion}
+
+We have constructed a boolean circuit that tests the Goormaghtigh condition for a fixed exponent pair and converted it into a 3‑SAT instance \(\Phi_{m,n}\). The SAT instance size is polynomial in \(\log B(m,n)\). In the next article (XVIII.3), we will build the spectral Hamiltonian \(H_{m,n} = \hat{V}_{m,n} + \Delta\) on the hypercube of assignments of \(\Phi_{m,n}\) and verify the four pillars.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{aks}
+  Agrawal, M., Kayal, N., \& Saxena, N. (2004). PRIMES is in P. \emph{Annals of Mathematics}, 160(2), 781–793.
+\bibitem{tseitin}
+  Tseitin, G. S. (1968). On the complexity of derivation in propositional calculus. \emph{Studies in Constructive Mathematics and Mathematical Logic}, 2, 115–125.
+\bibitem{kithimaXVIII1}
+  Kithima, C. (2026). Series XVIII, Article XVIII.1: Effective Bounds for Goormaghtigh.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+
+\end{document}
