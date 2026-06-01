@@ -20,7 +20,7 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 
 ---
 
-## List of 36 Resolved Problems
+## List of 33 Resolved Problems
 
 | # | Series | Problem / Challenge | Strategy |
 |---|--------|---------------------|----------|
