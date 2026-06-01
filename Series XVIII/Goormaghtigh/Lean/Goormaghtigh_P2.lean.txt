@@ -1,0 +1,25 @@
+/- XVIII_GoormaghtighP2.lean - Pilier P2 : trou spectral constant via Kithima Bridge. -/
+
+import XVIII_GoormaghtighP1
+import Kernel.KithimaBridge
+
+open Kernel.SpectralLibrary
+
+namespace SeriesXVIII.Goormaghtigh
+
+variable (params : Params) (B : ℕ) (hB : B ≥ 1)
+
+def H := hamiltonian params B
+def Δ := adjacency params B
+def V := diagonal (potential params B)
+
+lemma V_nonneg : ∀ σ, potential params B σ ≥ 0 := by
+  intro σ; rw [potential]; split_ifs <;> linarith
+
+lemma Δ_off_nonneg : ∀ i j, i ≠ j → Δ i j ≥ 0 := by
+  intro i j h; simp [Δ]; split_ifs <;> linarith
+
+theorem goormaghtigh_spectral_gap : spectral_gap H ≥ 2 :=
+  kithima_bridge V V_nonneg Δ Δ_off_nonneg 1 (by norm_num) (hypercube_spectral_gap (N B))
+
+end SeriesXVIII.Goormaghtigh

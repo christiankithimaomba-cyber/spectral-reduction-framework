@@ -1,0 +1,30 @@
+/- XVIII_GoormaghtighP1.lean - Pilier P1 : état fondamental unique strictement positif. -/
+
+import XVIII_GoormaghtighSAT
+import Kernel.SpectralLibrary
+
+open Kernel.SpectralLibrary
+
+namespace SeriesXVIII.Goormaghtigh
+
+variable (params : Params) (B : ℕ) (hB : B ≥ 1)
+
+def Φ := Φ params B
+def M : ℕ := Φ.numVars
+def ConfigSAT := Fin M → Bool
+
+def V (σ : ConfigSAT) : ℝ := if satisfies Φ σ then 0 else M^2
+
+def Δ : Matrix ConfigSAT ConfigSAT ℝ := adjacencyMatrixOf (hypercube_graph M)
+
+def H : Matrix ConfigSAT ConfigSAT ℝ := diagonal V + Δ
+
+lemma H_irreducible : Irreducible H :=
+  matrix_is_irreducible_of_adjacency_graph (hypercube_connected M)
+
+theorem ground_state_unique_pos :
+    ∃! ψ : ConfigSAT → ℝ, (∀ σ, ψ σ > 0) ∧ (∑ σ, ψ σ ^ 2 = 1) ∧
+      (H *ᵥ ψ = (λ_min H) • ψ) :=
+  perron_frobenius H
+
+end SeriesXVIII.Goormaghtigh
