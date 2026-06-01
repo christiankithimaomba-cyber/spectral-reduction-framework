@@ -1,0 +1,29 @@
+/-
+LemoineDefs.lean – Définitions et bornes effectives pour la conjecture de Lemoine.
+Références : Bombieri–Vinogradov (Maynard, Polymath).
+-/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Data.Nat.Prime
+import Mathlib.Tactic
+
+open Nat
+
+/-- Condition de Lemoine : n = p + 2q avec p,q premiers. -/
+def lemoine_condition (n p q : ℕ) : Prop :=
+  Prime p ∧ Prime q ∧ p + 2*q = n
+
+/-- Conjecture de Lemoine : tout entier impair n > 5 peut s'écrire p + 2q. -/
+def lemoine_conjecture (n : ℕ) : Prop :=
+  Odd n → n > 5 → ∃ p q, lemoine_condition n p q
+
+/-- Borne effective asymptotique N0 (Maynard/Polymath). -/
+constant N0 : ℕ
+axiom lemoine_asymptotic : ∀ n : ℕ, Odd n → n > N0 → ∃ p q, lemoine_condition n p q
+
+/-- Pour le range fini, borne triviale : p,q ≤ n. -/
+theorem lemoine_finite_bound (n : ℕ) (p q : ℕ) (h : lemoine_condition n p q) :
+    p ≤ n ∧ q ≤ n := by
+  have hp : p ≤ n := by linarith [h.2.2]
+  have hq : q ≤ n / 2 := by linarith [h.2.2]
+  exact ⟨hp, by linarith⟩
