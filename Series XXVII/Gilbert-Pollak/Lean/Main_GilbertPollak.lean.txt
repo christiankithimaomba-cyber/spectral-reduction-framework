@@ -1,0 +1,12 @@
+/-
+Main.lean – Entry point for Series XXIII (Gilbert–Pollak).
+-/
+
+import .GilbertPollakSynthesis
+
+open SpectralLibrary
+
+#check gilbert_pollak_conjecture
+
+-- List all axioms used in the proof
+#print axioms gilbert_pollak_conjecture

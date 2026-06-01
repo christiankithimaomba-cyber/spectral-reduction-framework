@@ -1,0 +1,30 @@
+/-
+GilbertPollakDefs.lean – Basic definitions for the Gilbert–Pollak conjecture.
+-/
+
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Finset.Basic
+
+open Real
+
+/-- The constant ρ = 2/√3. -/
+def rho : ℝ := 2 / sqrt 3
+
+/-- Length of a minimum spanning tree (MST) of a finite set of points.
+    This is a well‑defined function; we take it as an axiom. -/
+axiom MST_length (P : Finset (ℝ × ℝ)) : ℝ
+
+/-- Length of a minimum Steiner tree (SMT) of a finite set of points.
+    This is a well‑defined function; we take it as an axiom. -/
+axiom SMT_length (P : Finset (ℝ × ℝ)) : ℝ
+
+/-- Basic property: MST length is non‑negative. -/
+axiom MST_length_nonneg (P : Finset (ℝ × ℝ)) : 0 ≤ MST_length P
+
+/-- Basic property: SMT length is non‑negative. -/
+axiom SMT_length_nonneg (P : Finset (ℝ × ℝ)) : 0 ≤ SMT_length P
+
+/-- The Gilbert–Pollak conjecture: for every finite non‑empty point set P,
+    SMT_length(P) ≥ ρ * MST_length(P). -/
+def gilbert_pollak_conjecture : Prop :=
+  ∀ (P : Finset (ℝ × ℝ)), P.nonempty → SMT_length P ≥ rho * MST_length P
