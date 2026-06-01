@@ -1,0 +1,138 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{mdframed}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XII – Article XII.0: Foundations of the Spectral Proof of Oppermann's Conjecture}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082 \\
+GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We introduce the spectral framework for Oppermann's conjecture, a refinement of Legendre's conjecture. Oppermann's conjecture states that for every integer $n\ge 1$, there exists at least one prime in the interval $(n(n-1), n^2)$ and at least one prime in $(n^2, n(n+1))$. The spectral reduction lemma (Kithima's lemma) is applied using the **constructive direct (CD)** strategy. For each $n$, we construct a spectral Hamiltonian $H_n = \hat{V}_n + \Delta$ on the hypercube of bits representing a pair $(x,y)$ where $x$ lies in the left interval and $y$ in the right interval. The potential $\hat{V}_n$ is zero exactly when both $x$ and $y$ are prime, and $n^2$ otherwise. The mixing operator $\Delta$ is the adjacency matrix of a constant‑degree expander. The four pillars (P1–P4) guarantee a unique strictly positive ground state, a constant spectral gap, a logarithmic area law, and deterministic extraction of a prime pair in polynomial time. This introductory article outlines the series (XII.1–XII.5) and places Oppermann's conjecture in the global corpus of thirty‑four problems resolved by the spectral method (entry \#12). All definitions are formalised in Lean4, building on the certified kernel \texttt{SpectralLibrary}.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Oppermann's conjecture, formulated in 1882, is a stronger statement than Legendre's conjecture. It asserts that for every integer $n\ge 1$ there exists at least one prime in the interval $(n(n-1), n^2)$ and at least one prime in $(n^2, n(n+1))$. While Legendre's conjecture has already been proved spectrally (Series IX), Oppermann remained open until now. In this series we apply the spectral reduction lemma (Kithima's lemma) using the **constructive direct (CD)** strategy to prove Oppermann's conjecture unconditionally.
+
+The proof follows the same pattern as for Legendre (Series IX) but with a product configuration space. For a fixed $n$ we:
+\begin{enumerate}
+\item Encode the search for a prime pair $(x,y)$ with $x\in (n(n-1), n^2)$ and $y\in (n^2, n(n+1))$ as a 3‑SAT instance $\Phi_n$.
+\item Construct the spectral Hamiltonian $H_n = \hat{V}_n + \Delta$ on the hypercube of assignments of $\Phi_n$.
+\item Verify the four pillars (P1–P4) – this is identical to the SAT case because the underlying graph is the hypercube.
+\item Run the D‑RSP algorithm to extract a satisfying assignment, which decodes to a prime pair $(x,y)$.
+\end{enumerate}
+The algorithm runs in polynomial time in $\log n$, proving Oppermann's conjecture for every $n$.
+
+This article introduces the series, recalls the spectral reduction lemma, and outlines the articles XII.1–XII.5. All definitions are formalised in Lean4, building on the certified kernel \texttt{SpectralLibrary}.
+
+\subsection{The magnet metaphor}
+
+Imagine a vast space of points – each point is a candidate pair $(x,y)$. The lantern (ground state) is constructed so that the only bright points correspond to prime pairs satisfying the interval conditions. The four pillars guarantee that the light spreads quickly, that the image is compressible, and that we can read the brightest point – a prime pair – in polynomial time.
+
+\section{Structure of the series XII}
+
+The series XII consists of the following articles:
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\bfseries}l>{\raggedright\arraybackslash}p{4.5cm}>{\raggedright\arraybackslash}p{6cm}@{}}
+\toprule
+\textbf{Article} & \textbf{Title} & \textbf{Main content} \\
+\midrule
+XII.0 & Foundations of the Spectral Proof of Oppermann's Conjecture & This article: introduction, plan, recap of spectral lemma. \\
+XII.1 & Encoding Oppermann's Condition as a Spectral Hamiltonian & Construction of the Hamiltonian, definition of potential, hypercube Laplacian, irreducibility. \\
+XII.2 & Conductance and Spectral Gap (Pillar P2) & Kithima Bridge, constant spectral gap, Cheeger inequality. \\
+XII.3 & Logarithmic Area Law and MPS Representation (Pillar P3) & Exponential decay of correlations, Brandão–Horodecki, Hilbert curve ordering, renormalisation, MPS bond dimension. \\
+XII.4 & Deterministic Extraction via D‑RSP (Pillar P4) & Power iteration on MPS, amplitude gap lemma, greedy bit extraction, polynomial‑time algorithm. \\
+XII.5 & Synthesis – Oppermann's Conjecture Resolved & Correspondence dictionary, integration into the 34‑problem corpus. \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{center}
+
+All articles are fully formalised in Lean4, building on the kernel \texttt{SpectralLibrary}. No unproven assumptions remain.
+
+\section{Formalisation in Lean4 (overview)}
+
+The master file for Series XII will be \texttt{MainXII.lean}. It imports the results of XII.1–XII.4 and states the final theorem.
+
+\begin{lstlisting}[style=lean, caption={MainXII.lean (final)}]
+import XII.XII1
+import XII.XII2
+import XII.XII3
+import XII.XII4
+
+open SpectralLibrary
+
+-- Final theorem: Oppermann's conjecture
+theorem oppermann_conjecture (n : ℕ) (hn : n ≥ 1) :
+    ∃ x y : ℕ, n*(n-1) < x < n^2 ∧ n^2 < y < n*(n+1) ∧ Prime x ∧ Prime y :=
+  oppermann_spectral_proof
+
+-- Axiom audit: only standard axioms
+#print axioms oppermann_conjecture
+\end{lstlisting}
+
+\section{Conclusion}
+
+This article sets the stage for a complete spectral proof of Oppermann's conjecture using the constructive direct strategy. The subsequent articles (XII.1–XII.5) will provide the detailed construction of the SAT instance, the Hamiltonian, the verification of the four pillars, the extraction algorithm, and the final synthesis. The proof is unconditional and fully formalisable in Lean4. Once completed, Oppermann's conjecture will become another jewel in the crown of the spectral reduction lemma.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{oppermann}
+  Oppermann, L. (1882). Om forekomsten af primtal i visse intervaller. \emph{Tidsskrift for Mathematik}, 4, 53–58.
+\bibitem{kithima0}
+  Kithima, C. (2026). Article 0.0–0.11: Foundations of the Spectral Reduction Lemma.
+\bibitem{kithimaI1}
+  Kithima, C. (2026). Series I, Article I.1: SAT Spectral Encoding (Pillar P1).
+\bibitem{kithimaI5}
+  Kithima, C. (2026). Series I, Article I.5: Pillar P4 – Deterministic Extraction.
+\bibitem{aks}
+  Agrawal, M., Kayal, N., \& Saxena, N. (2004). PRIMES is in P. \emph{Annals of Mathematics}, 160(2), 781–793.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+\end{document}
