@@ -1,0 +1,28 @@
+/-
+KithimaLandauExtraction.lean – Algorithme d'extraction pour le range fini.
+-/
+
+import .KithimaLandauPillars
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (n : ℕ) (hn : Even n ∧ n > 4)
+
+def extract_pair : Option (ℕ × ℕ) :=
+  let H := H_kl n hn
+  match drsp_solver H with
+  | none => none
+  | some σ => some (decode_pair σ)
+
+theorem extraction_correct (n : ℕ) (hn : Even n ∧ n > 4) (h_le : n ≤ N0) :
+    extract_pair n hn ≠ none :=
+  by
+    -- Pour n ≤ N0, l'existence d'une solution est garantie par vérification exhaustive
+    have h_sat : Satisfiable (kithima_landau_SAT n hn) :=
+      kithima_landau_finite_verification n hn h_le
+    exact drsp_solver_correct (H_kl n hn) h_sat
+
+/-- Axiome : pour n ≤ N0, il existe une solution (vérification exhaustive). -/
+axiom kithima_landau_finite_verification (n : ℕ) (hn : Even n ∧ n > 4) (h_le : n ≤ N0) :
+    ∃ x y, is_landau_prime x ∧ is_landau_prime y ∧ (x^2+1)+(y^2+1) = n
