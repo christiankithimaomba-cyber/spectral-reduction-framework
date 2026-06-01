@@ -1,0 +1,24 @@
+/-
+RiemannHamiltonian.lean – Hamiltonien spectral pour l'instance SAT de RH.
+-/
+
+import .RiemannSAT
+import Kernel.SpectralLibrary
+
+open SpectralLibrary
+
+def M : ℕ := (riemann_SAT).numVars
+def Config := Fin M → Bool
+
+def V_potential (σ : Config) : ℝ :=
+  if satisfies riemann_SAT σ then 0 else M^2
+
+def Δ : Matrix Config Config ℝ := adjacencyMatrixOf (hypercube_graph M)
+
+def H_riemann : Matrix Config Config ℝ := diagonal V_potential + Δ
+
+lemma H_riemann_irreducible : Irreducible H_riemann :=
+  matrix_is_irreducible_of_adjacency_graph (hypercube_connected M)
+
+noncomputable def ψ0 : Config → ℝ :=
+  ground_state (mk_spectral_problem H_riemann)
