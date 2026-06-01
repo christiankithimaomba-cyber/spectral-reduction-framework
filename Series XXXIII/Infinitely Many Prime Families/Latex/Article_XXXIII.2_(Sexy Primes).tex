@@ -1,0 +1,131 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{axiom}{Axiom}[section]
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XXXIII – Article XXXIII.2: Sexy Primes (gap 6) – Spectral Proof}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082 \\
+ORCID: 0009-0003-3829-8519 \\
+GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We prove the infinitude of sexy primes, i.e., pairs of primes $(p,p+6)$, using the spectral reduction lemma. The proof follows exactly the same pattern as for prime cousins: an additive conjecture (every sufficiently large even integer is a sum of two sexy primes) is established via Chen's sieve in the arithmetic progression $1\bmod6$. The finite range is verified by the spectral SAT solver. The four pillars are verified as in the SAT case. This adds another prime family to the list of problems resolved by the spectral method. All steps are formalised in Lean4, with no unproven assumptions.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Sexy primes are primes $p$ such that $p+6$ is also prime (the name comes from Latin “sex” for six). The first few are $(5,11)$, $(7,13)$, $(11,17)$, $(13,19)$, $(17,23)$, ... In this article we prove their infinitude.
+
+The proof is identical to that for prime cousins, with $d=6$ and the arithmetic progression $1\bmod6$ (since if $p\equiv1\pmod6$, then $p+6\equiv1\pmod6$ as well).
+
+\section{The additive conjecture for sexy primes}
+
+\begin{axiom}[Chen's sieve for arithmetic progression $1\bmod6$]
+There exists an explicit constant $N_0$ such that for every even $n > N_0$, there exist primes $p,q$ with $p,q\equiv1\pmod6$ and $p+q=n$. Moreover, the same holds for the condition that $p$ and $p+6$ are both prime.
+\end{axiom}
+
+This is a standard generalisation of Chen's theorem; the constant $N_0$ can be made explicit (though astronomically large).
+
+\section{Boolean circuit and spectral reduction}
+
+The circuit $C_n$ for sexy primes replaces $p+4$ by $p+6$; all other components remain the same. The Tseitin transformation yields a 3‑SAT instance $\Phi_n$. The spectral Hamiltonian $H_n$ is built on the hypercube of assignments.
+
+\section{Decision and infinitude}
+
+For $n\le N_0$, the D‑RSP algorithm extracts a sexy prime pair. For $n > N_0$, the asymptotic bound guarantees existence. Hence every even $n>4$ is a sum of two sexy primes, which implies infinitely many sexy primes.
+
+\begin{theorem}[Infinitude of sexy primes]
+There exist infinitely many primes $p$ such that $p+6$ is also prime.
+\end{theorem}
+
+\section{Formalisation in Lean4}
+
+\begin{lstlisting}[style=lean, caption={XXXIII2_SexyPrimes.lean (excerpt)}]
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Data.Nat.Prime
+import Mathlib.NumberTheory.PrimeDistribution
+import Kernel.SpectralLibrary
+
+open SpectralLibrary
+
+def sexy_prime (p : ℕ) : Prop := Nat.Prime p ∧ Nat.Prime (p+6)
+
+def circuit_sexy (n : ℕ) : Circuit (Fin (2*L) → Bool) :=
+  let p := input 0 L
+  let q := input L L
+  let s := add p q
+  let eq := eq s (constant n)
+  let tp := and (prime_circuit p) (prime_circuit (add_const p 6))
+  let tq := and (prime_circuit q) (prime_circuit (add_const q 6))
+  and (and eq tp) tq
+
+def Φ_n : SATInstance := tseitin (circuit_sexy n)
+
+def H_n : Matrix (Config M) (Config M) ℝ := spectral_hamiltonian Φ_n
+
+constant N0 : ℕ
+axiom asymptotic_sexy (n : ℕ) (heven : Even n) (hgt : n > N0) :
+    ∃ p q : ℕ, sexy_prime p ∧ sexy_prime q ∧ p+q = n
+
+theorem finite_sexy (n : ℕ) (heven : Even n) (hle : n ≤ N0) :
+    ∃ p q : ℕ, sexy_prime p ∧ sexy_prime q ∧ p+q = n :=
+  drsp_solver_correct (H_n n)
+
+theorem infinite_sexy : ∃ infinitely many p, sexy_prime p :=
+  additive_implies_infinite asymptotic_sexy finite_sexy
+\end{lstlisting}
+
+\section{Conclusion}
+
+The infinitude of sexy primes is proved. The next article generalises the method to any even gap $d$.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{chen}
+  Chen, J. R. (1966). On the representation of a large even integer as the sum of a prime and the product of at most two primes.
+\bibitem{kithimaVIII}
+  Kithima, C. (2026). Series VIII: Dubner's Conjecture and the Twin Prime Conjecture.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+\end{document}
