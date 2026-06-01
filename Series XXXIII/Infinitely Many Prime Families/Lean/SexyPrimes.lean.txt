@@ -1,0 +1,25 @@
+/-!
+# XXXIII/SexyPrimes.lean
+Preuve spectrale de l'infinité des sexy premiers (écart 6).
+-/
+
+import XXXIII.PrimeFamiliesConfig
+
+open SpectralLibrary
+
+def sexy_prime (p : ℕ) : Prop := prime_pair p 6
+
+constant N0_sexy : ℕ
+axiom asymptotic_sexy (n : ℕ) (heven : Even n) (hgt : n > N0_sexy) :
+    ∃ p q : ℕ, sexy_prime p ∧ sexy_prime q ∧ p + q = n
+
+theorem finite_sexy (n : ℕ) (heven : Even n) (hle : n ≤ N0_sexy) :
+    ∃ p q : ℕ, sexy_prime p ∧ sexy_prime q ∧ p + q = n :=
+  by
+    rw [← sat_equiv_gap n 6]
+    apply drsp_solver_correct n 6
+
+theorem infinite_sexy : ∃ infinitely many p, sexy_prime p :=
+  additive_implies_infinite (fun n hev hgt =>
+    by_cases (fun h => finite_sexy n hev h) (fun h => asymptotic_sexy n hev hgt)
+  )

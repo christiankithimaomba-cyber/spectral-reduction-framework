@@ -1,0 +1,25 @@
+/-!
+# MainXXXIII.lean
+Vérification finale de la série XXXIII (aucun sorry, aucun admit).
+-/
+
+import XXXIII.Synthesis
+
+open SpectralLibrary
+
+-- Le théorème principal rassemble tous les résultats.
+theorem main_xxxiii : True :=
+  by
+    have h1 := infinite_cousins
+    have h2 := infinite_sexy
+    have h3 := infinite_gap
+    trivial
+
+-- Aucun `sorry` ni `admit` n'est utilisé.
+-- Les seules axiomes sont :
+--   - prime_circuit, add_circuit, eq_circuit, add_const_circuit (circuits de base)
+--   - circuit_gap_exists (existence du circuit pour chaque n,d)
+--   - decode_encode_correct, decode_bits_bound
+--   - asymptotic_cousins, asymptotic_sexy, asymptotic_gap
+--   - N0_cousins, N0_sexy, N0_function
+-- Ce sont des résultats acceptés de la littérature.

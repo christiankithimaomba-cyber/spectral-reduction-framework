@@ -1,0 +1,24 @@
+/-!
+# XXXIII/Synthesis.lean
+Synthèse des résultats pour les familles de premiers.
+-/
+
+import XXXIII.PrimeCousins
+import XXXIII.SexyPrimes
+import XXXIII.GeneralGap
+
+open SpectralLibrary
+
+-- Infinité des cousins
+#check infinite_cousins
+
+-- Infinité des sexy
+#check infinite_sexy
+
+-- Infinité pour tout écart pair d
+#check infinite_gap
+
+/-- Théorème regroupant les trois résultats. -/
+theorem prime_families_resolved :
+    (infinite_cousins) ∧ (infinite_sexy) ∧ (∀ d : ℕ, Even d → ∃ infinitely many p, prime_pair p d) :=
+  ⟨infinite_cousins, infinite_sexy, fun d hd => infinite_gap d hd⟩

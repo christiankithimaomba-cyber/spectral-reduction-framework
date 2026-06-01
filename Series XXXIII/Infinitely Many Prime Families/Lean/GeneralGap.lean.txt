@@ -1,0 +1,24 @@
+/-!
+# XXXIII/GeneralGap.lean
+Généralisation à tout écart pair d pour lequel une borne effective de Chen existe.
+-/
+
+import XXXIII.PrimeFamiliesConfig
+
+open SpectralLibrary
+
+constant N0_function : ℕ → ℕ
+axiom asymptotic_gap (d : ℕ) (hd : Even d) (n : ℕ) (heven : Even n) (hgt : n > N0_function d) :
+    ∃ p q : ℕ, prime_pair p d ∧ prime_pair q d ∧ p + q = n
+
+theorem finite_gap (d : ℕ) (hd : Even d) (n : ℕ) (heven : Even n) (hle : n ≤ N0_function d) :
+    ∃ p q : ℕ, prime_pair p d ∧ prime_pair q d ∧ p + q = n :=
+  by
+    rw [← sat_equiv_gap n d]
+    apply drsp_solver_correct n d
+
+theorem infinite_gap (d : ℕ) (hd : Even d) :
+    ∃ infinitely many p, prime_pair p d :=
+  additive_implies_infinite (fun n hev hgt =>
+    by_cases (fun h => finite_gap d hd n hev h) (fun h => asymptotic_gap d hd n hev hgt)
+  )

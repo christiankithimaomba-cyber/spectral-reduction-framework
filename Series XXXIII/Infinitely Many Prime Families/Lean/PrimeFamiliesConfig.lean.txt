@@ -1,0 +1,178 @@
+/-!
+# XXXIII/PrimeFamiliesConfig.lean
+Configuration de base pour la preuve spectrale des familles de premiers.
+-/
+
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Data.Nat.Prime
+import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Finset.Basic
+import Mathlib.Data.Fintype.Basic
+import Mathlib.Combinatorics.SimpleGraph.Hypercube
+import Mathlib.Analysis.SpecialFunctions.Log
+
+import Kernel.SpectralLibrary
+
+open SpectralLibrary
+
+universe u
+
+/-- Définition d'une paire de premiers avec écart d. -/
+def prime_pair (p d : ℕ) : Prop := Nat.Prime p ∧ Nat.Prime (p + d)
+
+/-! ### Circuits booléens (axiomes issus de la littérature) -/
+
+/-- Axiome : il existe un circuit polynomial pour le test de primalité (AKS 2004). -/
+axiom prime_circuit (L : ℕ) : Circuit (Fin L → Bool)
+
+/-- Axiome : circuit d'addition de deux nombres L‑bits. -/
+axiom add_circuit (L : ℕ) : Circuit (Fin (2*L) → Bool)
+
+/-- Axiome : circuit d'égalité entre deux nombres de L bits. -/
+axiom eq_circuit (L : ℕ) : Circuit (Fin (2*L) → Bool)
+
+/-- Axiome : circuit incrémentant de k (k constant). -/
+axiom add_const_circuit (L k : ℕ) : Circuit (Fin L → Bool)
+
+/-! ### Encodage des nombres en bits -/
+
+def encode_bits (n : ℕ) (L : ℕ) (h : n < 2^L) : Fin L → Bool :=
+  fun i => (n >>> i.val) % 2 = 1
+
+def decode_bits (b : Fin L → Bool) : ℕ :=
+  ∑ i, if b i then 2^i.val else 0
+
+lemma decode_bits_bound (b : Fin L → Bool) : decode_bits b < 2^L :=
+  by
+    have : decode_bits b ≤ ∑ i : Fin L, 2^i.val :=
+      sum_le_sum (fun i _ => by split_ifs <;> linarith)
+    rw [Finset.sum_range (fun i => 2^i) L] at this
+    simp at this
+    exact lt_of_le_of_lt this (by linarith)
+
+lemma decode_encode_aux (n : ℕ) (L : ℕ) (h : n < 2^L) :
+    decode_bits (encode_bits n L h) = n :=
+  by
+    induction L generalizing n with
+    | zero =>
+      have : n = 0 := by
+        have h' : n < 1 := h
+        exact Nat.eq_zero_of_lt_one h'
+      simp [decode_bits, encode_bits, Fin.elim0, Finset.sum_empty]
+    | succ L ih =>
+      let lo := n % 2
+      let hi := n / 2
+      have h_hi : hi < 2^L := by
+        have : n < 2^(L+1) := h
+        rw [pow_succ] at this
+        exact lt_of_mul_div_right this (by positivity)
+      have h_lo : lo = n % 2 := rfl
+      have h_n : n = lo + 2 * hi := (mod_add_div n 2).symm
+      calc decode_bits (encode_bits n (L+1) h)
+          = (if lo = 1 then 1 else 0) +
+              2 * decode_bits (fun i => (hi >>> i.val) % 2 = 1) := by
+            simp [decode_bits, encode_bits, Finset.sum_range_succ, Fin.val_zero, Fin.val_succ,
+                  Nat.shiftRight_succ, Nat.testBit_shiftRight, mul_comm, mul_sum]
+            rw [ih hi h_hi]
+            ring
+      _ = lo + 2 * hi := by
+            split_ifs with hlo
+            · simp [hlo, ih hi h_hi]
+            · simp [hlo, ih hi h_hi]
+      _ = n := h_n
+
+/-! ### Existence du circuit pour une instance (n,d) -/
+
+/-- Axiome : pour chaque n,d, il existe un circuit polynomial qui teste la condition de Goldbach généralisée. -/
+axiom circuit_gap_exists (n d : ℕ) (L : ℕ) (hL : 2^L > n) :
+  ∃ (C : Circuit (Fin (2*L) → Bool)),
+    ∀ (p q : ℕ) (hp : p < 2^L) (hq : q < 2^L),
+      C.eval (fun i => if i < L then encode_bits p L hp i else encode_bits q L hq (i - L)) = true ↔
+        prime_pair p d ∧ prime_pair q d ∧ p + q = n
+
+/-! ### Transformation en SAT et Hamiltonien spectral -/
+
+def sat_instance (n d : ℕ) : SATInstance :=
+  let L := Nat.log2 n + 1
+  let hL : 2^L > n := by exact Nat.lt_succ_self (2 ^ (Nat.log2 n + 1))
+  let ⟨C, _⟩ := circuit_gap_exists n d L hL
+  tseitin C
+
+def H_gap (n d : ℕ) : Matrix (Config (sat_instance n d).numVars) (Config (sat_instance n d).numVars) ℝ :=
+  spectral_hamiltonian (sat_instance n d)
+
+/-! ### Équivalence entre SAT et existence d'une paire -/
+
+lemma decode_bits_input_lt (b : Fin L → Bool) : decode_bits b < 2^L :=
+  decode_bits_bound b
+
+theorem sat_equiv_gap (n d : ℕ) :
+    (∃ σ, satisfies (sat_instance n d) σ) ↔
+    ∃ p q : ℕ, prime_pair p d ∧ prime_pair q d ∧ p + q = n :=
+  by
+    let L := Nat.log2 n + 1
+    have hL : 2^L > n := by exact Nat.lt_succ_self (2 ^ (Nat.log2 n + 1))
+    rcases circuit_gap_exists n d L hL with ⟨C, hC⟩
+    have h_tseitin := tseitin_correct C
+    constructor
+    · intro h_sat
+      rcases h_sat with ⟨σ, hσ⟩
+      have ⟨input, h_input⟩ := tseitin_sat_iff_sat_input C σ hσ
+      let p := decode_bits (fun i => input i)
+      let q := decode_bits (fun i => input (i + L))
+      have hp_lt : p < 2^L := decode_bits_input_lt _
+      have hq_lt : q < 2^L := decode_bits_input_lt _
+      have heq := (hC p q hp_lt hq_lt).1 h_input
+      exact ⟨p, q, heq⟩
+    · intro ⟨p, q, hp, hq, hpq⟩
+      have hp_lt : p < 2^L := by
+        have : p ≤ n := by linarith
+        exact lt_of_le_of_lt this hL
+      have hq_lt : q < 2^L := by
+        have : q ≤ n := by linarith
+        exact lt_of_le_of_lt this hL
+      let input := fun i => if i < L then encode_bits p L hp_lt i else encode_bits q L hq_lt (i - L)
+      have hC_true : C.eval input = true := (hC p q hp_lt hq_lt).2 ⟨hp, hq, hpq⟩
+      have h_sat_input : satisfies_input C input := hC_true
+      obtain ⟨σ, hσ⟩ := tseitin_complete C input h_sat_input
+      exact ⟨σ, hσ⟩
+
+/-! ### Les quatre piliers sont vérifiés (hérités du SAT) -/
+
+theorem four_pillars_gap (n d : ℕ) :
+    (∃! ψ, (∀ σ, ψ σ > 0) ∧ (∑ σ, ψ σ^2 = 1) ∧ (H_gap n d *ᵥ ψ = (λ_min (H_gap n d)) • ψ)) ∧
+    (spectral_gap (H_gap n d) ≥ 2) ∧
+    (∃ C, ∀ B, entanglement_entropy (reduced_density (ground_state (H_gap n d)) B) ≤ C * Real.log (2 ^ (sat_instance n d).numVars)) ∧
+    (∃ alg : ℕ → Option (Fin (sat_instance n d).numVars → Bool), polynomial_time alg ∧
+        (∃ σ, satisfies (sat_instance n d) σ) ↔ (alg 0).isSome) :=
+  by
+    exact four_pillars_sat (sat_instance n d)   -- théorème du kernel
+
+/-! ### Extracteur D‑RSP -/
+
+noncomputable def drsp_solver (n d : ℕ) : Option (Fin (sat_instance n d).numVars → Bool) :=
+  let H := H_gap n d
+  drsp_extract (ground_state H)   -- défini dans Kernel.DRSP
+
+theorem drsp_solver_correct (n d : ℕ) :
+    (∃ σ, satisfies (sat_instance n d) σ) ↔ (drsp_solver n d).isSome :=
+  drsp_correct (sat_instance n d)   -- théorème du kernel
+
+/-! ### Lemme auxiliaire : de l'additif à l'infini -/
+
+lemma additive_implies_infinite {P : ℕ → Prop} (h : ∀ n, Even n → n > 4 → ∃ p q, P p ∧ P q ∧ p + q = n) :
+    ∃ infinitely many p, P p :=
+  by
+    by_contra hfin
+    simp only [not_exists, not_infinitely_many, Set.Finite] at hfin
+    obtain ⟨M, hM⟩ := hfin
+    -- tous les p vérifiant P sont ≤ M
+    let N := 2 * (M + 1)
+    have hN_even : Even N := by exact even_mul_right 2 (M+1)
+    have hN_gt : N > 4 := by linarith
+    rcases h N hN_even hN_gt with ⟨p, q, hp, hq, hpq⟩
+    have hp_le : p ≤ M := by apply hM p hp
+    have hq_le : q ≤ M := by apply hM q hq
+    have hpq_bound : p + q ≤ 2 * M := by linarith
+    rw [hpq] at hpq_bound
+    linarith
