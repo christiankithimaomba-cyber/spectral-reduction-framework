@@ -2,8 +2,8 @@
 
 import Kernel.SpectralLibrary
 import SeriesI.PEqualNP
--- ... tous les imports des 36 séries
-import SeriesXXXV.Fuglede
+-- ... tous les imports des 33 séries
+import SeriesXXXIII.Infinitely Many Prime Families
 
 open SpectralLibrary
 
