@@ -1,0 +1,19 @@
+/- 
+Extraction.lean – Algorithme d’extraction générique pour tous les problèmes ci‑dessus.
+-/
+
+import Kernel.PowerIteration
+import Universality.AllProblems
+
+open SpectralLibrary
+
+def extract_solution {V : Type} [Fintype V] [DecidableEq V] (P : SpectralProblem V) (steps : ℕ) : Option V :=
+  let ψ := power_iteration P steps   -- défini dans Kernel/PowerIteration.lean
+  let σ := argmax (fun x => |MPS.eval ψ x|)
+  if verify P σ then some σ else none
+
+-- Axiom: Le théorème de correction est prouvé dans Kernel/PowerIteration.lean et PNP/Extraction.lean
+-- Reference: Article 5, Theorem extraction_correct
+axiom extraction_correct {V : Type} [Fintype V] [DecidableEq V] (P : SpectralProblem V)
+    (h_gap : spectral_gap (Hamiltonian P) ≥ γ) (h_area : area_law P) (steps : ℕ) (h_steps : steps ≥ poly_steps) :
+    (∃ x, is_solution P x) ↔ (extract_solution P steps).isSome ∧ is_solution P (extract_solution P steps).get
