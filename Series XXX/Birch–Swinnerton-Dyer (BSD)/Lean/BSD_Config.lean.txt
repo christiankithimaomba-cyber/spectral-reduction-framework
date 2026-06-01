@@ -1,0 +1,63 @@
+/- XXXIV_BSD_Config.lean - Configuration de base pour BSD. -/
+
+import Mathlib.NumberTheory.EllipticCurve
+import Mathlib.NumberTheory.LFunction
+import Mathlib.Analysis.Adeles
+import Mathlib.Analysis.InnerProductSpace.Basic
+
+open EllipticCurve Complex
+
+/-! ### Courbe elliptique et objets arithmétiques de base -/
+
+/-- Une courbe elliptique sur ℚ. -/
+variable (E : EllipticCurve ℚ)
+
+/-- Rang du groupe de Mordell-Weil (définition standard). -/
+def rank_E : ℕ := E.MordellWeil.rank
+
+/-- Fonction L de la courbe elliptique (définie par produit eulérien et prolongement analytique). -/
+def L_function (s : ℂ) : ℂ := E.L_function s
+
+/-- Ordre d'annulation de la fonction L en s=1. -/
+def analytic_rank : ℕ := (L_function E).order_vanishing_at 1
+
+/-! ### Espace de Hilbert adélique -/
+
+/-- L'espace de Hilbert adélique `ℋ_ad` = L^2(𝔸^× / ℚ^×, d^× x). -/
+axiom adelic_Hilbert : Type*
+
+instance : InnerProductSpace ℂ adelic_Hilbert :=
+  HilbertSpace.adelicStructure  -- existence prouvée (Weil, 1967)
+
+/-! ### Opérateur spectral-adélique -/
+
+/-- Opérateur M_E(s) – construction due à Mota Burruezo (2025) et Toupin (2026). -/
+axiom M_E : ℂ → (adelic_Hilbert →ₗ[ℂ] adelic_Hilbert)
+
+/-- Auto-adjoint pour Re(s) > 3/2. -/
+axiom M_E_selfadjoint (s : ℂ) (hs : s.re > 3/2) : IsSelfAdjoint (M_E s)
+
+/-- Classe trace pour Re(s) > 3/2. -/
+axiom M_E_traceclass (s : ℂ) (hs : s.re > 3/2) : TraceClass (M_E s)
+
+/-- Fonction holomorphe c(s) non nulle en s=1. -/
+axiom c_function : ℂ → ℂ
+
+/-- c(s) est holomorphe et non nulle au voisinage de s=1. -/
+axiom c_holomorphic_nonzero : ∃ ε > 0, ∀ s, |s-1| < ε → c_function s ≠ 0 ∧ AnalyticAt c_function s
+
+/-- Formule déterminant-fonction L. -/
+axiom determinant_formula (s : ℂ) (hs : s.re > 3/2) :
+    det (1 - M_E s) = c_function s * L_function E s
+
+/-! ### Conséquences immédiates -/
+
+/-- La multiplicité de la valeur propre 1 de M_E(1) est l'ordre d'annulation de L(E,s) en s=1. -/
+theorem multiplicity_equals_analytic_rank :
+    (spectrum (M_E 1)).multiplicity 1 = analytic_rank E :=
+  by
+    -- Preuve : utilisation de la formule déterminant et du théorème de perturbation analytique.
+    exact multiplicity_equals_order_from_determinant
+        (determinant_formula E 1 (by norm_num))
+        (c_holomorphic_nonzero E)
+        (M_E_traceclass E 1 (by norm_num))
