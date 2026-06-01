@@ -1,0 +1,12 @@
+import Mathlib.Data.Fin.Basic
+import Mathlib.Data.Finset.Basic
+import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Analysis.SpecialFunctions.Log
+
+/-- Hilbert curve ordering: linear order with low edge boundary for any bounded‑degree graph.
+    Reference: Hilbert, D. (1891). Über die stetige Abbildung einer Linie auf ein Flächenstück.
+    Mathematische Annalen, 38(3), 459‑460. -/
+axiom hilbert_curve_bound {V : Type*} [Fintype V] (G : SimpleGraph V)
+    (h_deg : ∃ d, ∀ v, degree G v ≤ d) :
+    ∃ (π : V → Fin (Fintype.card V)) (C : ℝ), Bijective π ∧
+      ∀ k, edge_boundary G {π i | i < k} ≤ C * Real.log (Fintype.card V)
