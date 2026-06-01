@@ -1,0 +1,36 @@
+/-
+FermatCatalanPillars.lean – Vérification des quatre piliers.
+-/
+
+import .FermatCatalanHamiltonian
+import Kernel.KithimaBridge
+import Kernel.BrandaoHorodecki
+import Kernel.HilbertCurve
+import Kernel.MPSAreaLaw
+
+open SpectralLibrary
+
+variable (m n k : ℕ) (B : ℕ) (hB : B ≥ 1)
+
+-- P1
+lemma ground_state_unique_pos :
+    ∃! ψ : Config → ℝ, (∀ σ, ψ σ > 0) ∧ (∑ σ, ψ σ ^ 2 = 1) ∧
+      (H_fc m n k B hB *ᵥ ψ = (λ_min (H_fc m n k B hB)) • ψ) :=
+  perron_frobenius (mk_spectral_problem (H_fc m n k B hB))
+
+-- P2 : trou spectral constant
+lemma spectral_gap_constant : spectral_gap (H_fc m n k B hB) ≥ 2 :=
+  kithima_bridge (diagonal V) (by simp [V]; intro; split_ifs <;> linarith)
+                Δ (by simp [Δ]; intros; split_ifs <;> linarith)
+                1 (by norm_num) (HypercubeHarper.spectral_gap_adjacency (by linarith))
+
+-- P3 : loi d'aire logarithmique
+lemma area_law_fc : ∃ C > 0, ∀ B : Finset Config,
+    entanglement_entropy (reduced_density (ground_state (mk_spectral_problem H_fc)) B) ≤ C * Real.log M :=
+  area_law_for_hypercube (spectral_gap_constant m n k B hB)
+
+-- P4 : extraction D‑RSP
+theorem drsp_correct_fc :
+    ∃ alg, polynomial_time alg ∧
+      (Satisfiable (fermat_catalan_SAT m n k B hB) ↔ (alg m n k).isSome ∧ satisfies _ (alg m n k).get) :=
+  drsp_correct (H_fc m n k B hB)

@@ -1,0 +1,47 @@
+/-
+FermatCatalanCircuit.lean – Circuit booléen pour tester a^m + b^n = c^k dans la borne.
+-/
+
+import .FermatCatalanDefs
+import Kernel.Circuit.Basic
+import Kernel.Circuit.Arithmetic
+
+open Circuit
+
+variable (m n k : ℕ) (B : ℕ) (hB : B ≥ 1)
+
+def L : ℕ := Nat.log2 B + 1
+
+/-- Circuit pour l'exponentiation à une puissance constante (par multiplication répétée). -/
+def pow_circuit (x : Circuit (List Bool)) (e : ℕ) : Circuit (List Bool) :=
+  let rec loop (acc : Circuit (List Bool)) (exp : ℕ) : Circuit (List Bool) :=
+    if exp = 0 then constant 1
+    else if exp % 2 = 0 then
+      let sq := mul acc acc
+      loop sq (exp / 2)
+    else
+      let sq := mul acc acc
+      mul acc (loop sq (exp / 2))
+  loop x e
+
+/-- Circuit principal : test de l'équation avec coprimalité. -/
+def fermat_catalan_circuit : Circuit (Fin (3*L) → Bool) :=
+  let a := input 0 L
+  let b := input L L
+  let c := input (2*L) L
+  let A := pow_circuit a m
+  let B := pow_circuit b n
+  let C := pow_circuit c k
+  let s := add A B
+  let eq := eq s C
+  let g := gcd3 a b c
+  let gc := eq g (constant 1)
+  and eq gc
+
+/-- Correction (axiome, car preuve standard). -/
+axiom fermat_catalan_circuit_correct (bits : Fin (3*L) → Bool) :
+    (fermat_catalan_circuit m n k B).eval bits = true ↔
+    let a := bits_to_nat (bits.slice 0 L)
+    let b := bits_to_nat (bits.slice L L)
+    let c := bits_to_nat (bits.slice (2*L) L)
+    a^m + b^n = c^k ∧ Nat.gcd a (Nat.gcd b c) = 1

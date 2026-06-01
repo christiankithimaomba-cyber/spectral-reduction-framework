@@ -1,0 +1,21 @@
+/-
+FermatCatalanExtraction.lean – Algorithme d'extraction pour un triple donné.
+-/
+
+import .FermatCatalanPillars
+import Kernel.DRSP
+
+open SpectralLibrary
+
+variable (m n k : ℕ) (B : ℕ) (hB : B ≥ 1)
+
+def extract_solution : Option (ℕ × ℕ × ℕ) :=
+  let H := H_fc m n k B hB
+  match drsp_solver H with
+  | none => none
+  | some σ => some (decode_triple σ)
+
+theorem extraction_correct (m n k : ℕ) (B : ℕ) (hB : B ≥ 1) :
+    Satisfiable (fermat_catalan_SAT m n k B hB) → (extract_solution m n k B hB).isSome ∧
+      satisfies_problem (extract_solution m n k B hB).get :=
+  drsp_solver_correct (H_fc m n k B hB)
