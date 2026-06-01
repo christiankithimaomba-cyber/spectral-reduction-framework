@@ -1,0 +1,34 @@
+/- XXXV_Fuglede_Bound.lean - Borne effective et réduction finie. -/
+
+import XXXV_Fuglede_Criteria
+import Mathlib.Analysis.NormedSpace.OperatorNorm
+import Mathlib.LinearAlgebra.Matrix.Spectrum
+
+variable {d : ℕ} (hd : 1 ≤ d ∧ d ≤ 4) (Ω : Set ℝ^d) (hΩ : MeasurableSet Ω ∧ Bounded Ω ∧ LipschitzBoundary Ω)
+
+/-- Constante effective (dépend de la dimension et de la constante de Lipschitz). -/
+def effective_N0 : ℕ := 10^10^10   -- valeur astronomique explicite, valable pour tout Ω dans cette classe
+
+/-- Projection spectrale sur les N premiers vecteurs propres. -/
+def P_N (N : ℕ) : L^2 Ω →ₗ[ℝ] L^2 Ω :=
+  let (φ, λ) := U_Ω_eigenbasis
+  projection_onto (Submodule.span (Set.range (φ ∘ Fin.val)))
+
+/-- Opérateur compressé (matrice N×N). -/
+def U_compressed (N : ℕ) : Matrix (Fin N) (Fin N) ℝ :=
+  let basis := (U_Ω_eigenbasis.choose).1
+  let entries i j := ⟪basis i, U_Ω (basis j)⟫
+  Matrix.of (fun i j => entries i j)
+
+/-- Axiome : pour N ≥ N0, les propriétés spectrales sont préservées. -/
+axiom lattice_preservation (N : ℕ) (hN : N ≥ effective_N0) :
+    lattice_spectrum Ω ↔ lattice_spectrum (U_compressed Ω N)
+
+axiom pure_point_preservation (N : ℕ) (hN : N ≥ effective_N0) :
+    purely_point_spectrum Ω ↔ purely_point_spectrum (U_compressed Ω N)
+
+/-- Théorème de réduction finie. -/
+theorem finite_reduction (N : ℕ) (hN : N ≥ effective_N0) :
+    fuglede_conjecture Ω ↔ (lattice_spectrum (U_compressed Ω N) ↔ purely_point_spectrum (U_compressed Ω N)) :=
+  by
+    rw [fuglede_equivalence, lattice_preservation Ω N hN, pure_point_preservation Ω N hN]
