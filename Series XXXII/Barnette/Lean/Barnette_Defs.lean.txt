@@ -1,0 +1,36 @@
+/-
+BarnetteDefs.lean – Basic definitions for Barnette's conjecture.
+Author: Christian Kithima
+ORCID: 0009-0003-3829-8519
+GitHub: https://github.com/christiankithimaomba-cyber/spectral-reduction-framework/tree/main/Kernel
+-/
+
+import Mathlib.Data.Nat.Basic
+import Mathlib.Combinatorics.SimpleGraph.Basic
+
+open SimpleGraph
+
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+/-- A cubic graph is 3‑regular. -/
+def cubic (G : SimpleGraph V) : Prop := ∀ v, degree G v = 3
+
+/-- A bipartite graph has a partition of vertices into two independent sets. -/
+def bipartite (G : SimpleGraph V) : Prop :=
+  ∃ (A B : Finset V), A ∪ B = univ ∧ A ∩ B = ∅ ∧
+    ∀ u v, G.Adj u v → (u ∈ A ∧ v ∈ B) ∨ (u ∈ B ∧ v ∈ A)
+
+/-- A planar graph can be drawn in the plane without edge crossings.
+    For the purpose of the proof, we only need the combinatorial consequence
+    (e.g., the existence of a dual graph and a bound on the number of edges). -/
+axiom planar (G : SimpleGraph V) : Prop
+
+/-- A Barnette graph is cubic, bipartite, and planar. -/
+def barnette_graph (G : SimpleGraph V) : Prop :=
+  cubic G ∧ bipartite G ∧ planar G
+
+/-- A Hamiltonian cycle is a cycle that visits every vertex exactly once. -/
+def hamiltonian_cycle (G : SimpleGraph V) : Prop :=
+  ∃ (σ : Fin (Fintype.card V) → V), Function.Injective σ ∧
+    (∀ i : Fin (Fintype.card V - 1), G.Adj (σ i) (σ (i+1))) ∧
+    G.Adj (σ (Fintype.card V - 1)) (σ 0)
