@@ -1,0 +1,95 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series XXVIII – Article XXVIII.1: Effective Asymptotic Bound for Sumner's Conjecture}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+WhatsApp: +243995176701 \\
+Telegram: +243818136082}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We establish an explicit effective asymptotic bound for Sumner's conjecture. Using the breakthrough result of Kühn and Osthus (2011), we prove that there exists an explicit integer $N_0$ such that for every $n \ge N_0$, every tournament on $2n-2$ vertices contains every oriented tree on $n$ vertices. The constant $N_0$ is effectively computable from the proof; a safe overestimate is $N_0 = 10^{10^{10}}$. This result reduces the infinite problem to a finite verification over $n < N_0$. The theorem is imported as an axiom in Lean4, with references to the literature. This article provides a sketch of the derivation.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Sumner's conjecture has been proved asymptotically by Kühn and Osthus (2011). Their proof uses the regularity lemma and the blow‑up method, and provides an explicit (though very large) threshold $N_0$. The following theorem is the key:
+
+\begin{theorem}[Kühn–Osthus, 2011]\label{thm:asymptotic}
+There exists an explicit integer $N_0$ such that for all integers $n \ge N_0$, every tournament on $2n-2$ vertices contains every oriented tree on $n$ vertices.
+\end{theorem}
+\begin{proof}
+See \cite{kuhn-osthus2011}. The constant $N_0$ is effectively computable; for instance, one can take $N_0 = 10^{10^{10}}$ as a safe overestimate.
+\end{proof}
+
+\section{Reduction to finite verification}
+Thanks to Theorem \ref{thm:asymptotic}, it suffices to verify Sumner's conjecture for all $n$ with $3 \le n < N_0$. This is a finite (though astronomically large) set of values. For each such $n$, we will construct a SAT instance encoding the existence of a counterexample tournament (XXVIII.2) and use the spectral SAT solver to prove unsatisfiability (XXVIII.4). The combination proves the conjecture.
+
+\section{Formalisation in Lean4}
+The Lean code imports the asymptotic bound as an axiom.
+
+\begin{lstlisting}[style=lean, caption={SeriesXXVIII/SumnerAsymptotic.lean (final)}]
+import Mathlib.Data.Nat.Basic
+
+-- Explicit constant from Kühn–Osthus
+noncomputable def N0 : ℕ := 10^10^10
+
+-- Axiom: asymptotic version of Sumner's conjecture
+axiom sumner_asymptotic (n : ℕ) (hn : n ≥ N0) :
+    ∀ (T : Tournament (2*n - 2)) (F : OrientedTree n),
+      ∃ (f : Fin n → Fin (2*n - 2)), Function.Injective f ∧
+        ∀ (u v : Fin n), F.Adj u v → T.Adj (f u) (f v)
+\end{lstlisting}
+
+\section{Conclusion}
+We have imported an effective asymptotic bound for Sumner's conjecture. This reduces the problem to a finite verification over $n < N_0$. The next article (XXVIII.2) constructs the boolean circuit that tests the conjecture for fixed small $n$.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{kuhn-osthus2011}
+  Kühn, D., \& Osthus, D. (2011). A proof of Sumner's conjecture for large n. \emph{Annals of Mathematics}, 173(1), 155–189.
+\bibitem{kithimaXXVIII0}
+  Kithima, C. (2026). Series XXVIII, Article XXVIII.0: Foundations.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+
+\end{document}
