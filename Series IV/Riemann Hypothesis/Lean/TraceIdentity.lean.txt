@@ -1,0 +1,52 @@
+import .SelfAdjointCompact
+import Mathlib.Analysis.SpecialFunctions.Gaussian
+
+open Real
+
+variable (α : ℝ) (hα : 0 < α)
+
+/-- Axiom: Selberg trace formula for H (Schepis 2025, Theorem 3.1). -/
+axiom selberg_trace_formula (h : ℝ → ℝ)
+    (h_even : ∀ t, h (-t) = h t)
+    (h_rapid : ∀ k : ℕ, ∃ C : ℝ, ∀ t, |t^k * h t| ≤ C) :
+    ∑' n, h (eigenvalues α n) =
+    ∑ p : Prime, ∑' (m : ℕ), (m ≥ 1).toReal *
+        (Real.log p.val) / (p.val ^ (m/2 : ℝ)) *
+        (1 / π) * ∫ t in -∞..∞, h t * Real.cos (m * Real.log p.val * t) ∂t
+
+/-- Gaussian function. -/
+def gaussian (σ : ℝ) (t : ℝ) : ℝ := Real.exp (-σ * t^2)
+
+lemma gaussian_even (σ : ℝ) (t : ℝ) : gaussian σ (-t) = gaussian σ t := by simp [gaussian, sq]
+
+/-- Gaussian decays faster than any power. -/
+lemma gaussian_rapid (σ : ℝ) (hσ : σ > 0) (k : ℕ) : ∃ C : ℝ, ∀ t, |t^k * gaussian σ t| ≤ C :=
+  by
+    have h₁ : ∀ t, |t^k * Real.exp (-σ * t^2)| = |t|^k * Real.exp (-σ * t^2) := by
+      intro t; rw [abs_mul, abs_pow, abs_exp, Real.exp_abs]
+    have h₂ : Tendsto (fun t => |t|^k * Real.exp (-σ * t^2)) atTop (nhds 0) :=
+      tendsto_pow_mul_exp_neg_atTop k (by linarith)
+    have h₃ : Tendsto (fun t => |t|^k * Real.exp (-σ * t^2)) atBot (nhds 0) :=
+      by simpa [abs] using tendsto_pow_mul_exp_neg_atTop k (by linarith)
+    let f (t : ℝ) := |t|^k * Real.exp (-σ * t^2)
+    have hf_cont : Continuous f := by continuity
+    obtain ⟨C, hC⟩ := f.bounded_of_tendsto_zero_atTop_atBot h₂ h₃ hf_cont
+    exact ⟨C, fun t => hC t⟩
+
+/-- Fourier cosine transform of the Gaussian (Mathlib). -/
+lemma fourier_gaussian (σ : ℝ) (hσ : σ > 0) (ω : ℝ) :
+    ∫ t in -∞..∞, Real.exp (-σ * t^2) * Real.cos (ω * t) dt =
+      Real.sqrt (π / σ) * Real.exp (-ω^2 / (4 * σ)) :=
+  integral_gaussian_mul_cos hσ ω
+
+/-- Heat kernel trace identity. -/
+theorem heat_kernel_trace (σ : ℝ) (hσ : σ > 0) :
+    ∑' n, Real.exp (-σ * (eigenvalues α n)^2) =
+    ∑ p : Prime, ∑' (m : ℕ), (m ≥ 1).toReal *
+        (Real.log p.val) / (p.val ^ (m/2 : ℝ)) *
+        (1 / π) * (Real.sqrt (π / σ) * Real.exp (- (m * Real.log p.val)^2 / (4 * σ))) :=
+  by
+    apply selberg_trace_formula α (gaussian σ) (gaussian_even σ)
+    · exact fun k => gaussian_rapid σ hσ k
+    · simp only [gaussian, fourier_gaussian σ hσ]
+      ring
