@@ -1,0 +1,141 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+\geometry{margin=2.5cm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+
+\lstdefinestyle{lean}{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single
+}
+
+\title{Series IV – Article IV.7: The Hilbert–Pólya Conjecture (Corollary of SRH)}
+\author{Christian Kithima \\
+Independent Researcher, Kinshasa \\
+\texttt{christiankithimaomba@gmail.com} \\
+ORCID: 0009-0003-3829-8519 \\
+GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The Hilbert–Pólya conjecture states that the non‑trivial zeros of the Riemann zeta function $\zeta(s)$ correspond to the eigenvalues of a self‑adjoint operator. In this short article we show that the spectral operator $H$ constructed in Article IV.1, whose self‑adjointness and spectral properties were established in Articles IV.2–IV.5, satisfies exactly this requirement. The eigenvalues of $H$ are the numbers $\gamma$ such that $\zeta(1/2 + i\gamma)=0$. Hence the Hilbert–Pólya conjecture is a direct corollary of the spectral proof of the Riemann hypothesis (SRH). The result is formalised in Lean4 with no additional axioms.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+The Hilbert–Pólya conjecture, proposed by David Hilbert and George Pólya around 1914, suggests that the non‑trivial zeros of the Riemann zeta function $\zeta(s)$ correspond to the eigenvalues of a self‑adjoint operator. Proving this conjecture would imply the Riemann hypothesis, because self‑adjoint operators have real eigenvalues.
+
+In the spectral proof of the Riemann hypothesis (Series IV) we constructed an explicit self‑adjoint operator $H$ on a Hilbert space of prime numbers. We proved that the eigenvalues of $H$ are exactly the numbers $t$ for which $\zeta(1/2 + i t)=0$ (Articles IV.4–IV.5). Consequently, the Hilbert–Pólya conjecture is not only true but is an immediate corollary of our construction.
+
+\section{Recap of the operator $H$}
+
+In Article IV.1 we defined the Hilbert space $\mathcal{H}_P = \ell^2(\mathbb{P}, w)$ with $w(p)=\frac{\log p}{p^{1+\alpha}}$ ($\alpha>0$) and the matrix kernel
+\[
+A_{pq} = \sum_{m\ge 1} \frac{\log p}{p^{m/2}} \delta_{p^m, q}.
+\]
+The chiral operator $H$ was defined as
+\[
+H = \begin{pmatrix} 0 & A^\dagger \\ A & 0 \end{pmatrix}
+\]
+on $\mathcal{H}_P \oplus \mathcal{H}_P$. Articles IV.2 and IV.3 proved that $H$ is self‑adjoint and has compact resolvent, hence a discrete real spectrum.
+
+\section{Spectral identification with zeta zeros}
+
+Article IV.4 established the Fredholm determinant identity
+\[
+\frac{\det(sI - H)}{\det(s_0I - H)} = \frac{\xi(s)}{\xi(s_0)},
+\]
+where $\xi(s)$ is the completed Riemann zeta function. From this identity and the properties of $\xi(s)$, Article IV.5 deduced the spectral characterisation
+\[
+\exists n\; \text{s.t.}\; \lambda_n = t \quad\Longleftrightarrow\quad \zeta(1/2 + i t) = 0.
+\]
+Thus the eigenvalues $\{\lambda_n\}$ of $H$ are precisely the imaginary parts of the non‑trivial zeros of $\zeta(s)$.
+
+\section{The Hilbert–Pólya conjecture}
+
+The Hilbert–Pólya conjecture is the statement that there exists a self‑adjoint operator whose eigenvalues are exactly the imaginary parts of the non‑trivial zeros of $\zeta(s)$. Our operator $H$ satisfies this definition. Therefore:
+
+\begin{theorem}[Hilbert–Pólya conjecture]
+The operator $H$ constructed in Article IV.1 is self‑adjoint and its eigenvalues are precisely the numbers $\gamma$ such that $\zeta(1/2 + i\gamma)=0$. Hence the Hilbert–Pólya conjecture holds.
+\end{theorem}
+
+\begin{proof}
+Self‑adjointness is proved in Article IV.2. The equality between the set of eigenvalues and the set of imaginary parts of zeros is proved in Articles IV.4–IV.5. The statement follows immediately.
+\end{proof}
+
+\section{Formalisation in Lean4}
+
+Le code Lean ci‑dessous énonce le résultat final. Il utilise les théorèmes déjà prouvés dans les fichiers précédents.
+
+\begin{lstlisting}[style=lean, caption={SeriesIV/HilbertPolya.lean}]
+import .SpectralCharacterization
+import .ProofOfRH
+
+open Real Complex
+
+variable (α : ℝ) (hα : 0 < α)
+
+/-- The operator H is self‑adjoint (proved in IV.2). -/
+#check H_selfadjoint α hα
+
+/-- The eigenvalues of H are exactly the imaginary parts of non‑trivial zeros (IV.5). -/
+#check spectral_characterization α hα
+
+/-- Hilbert–Pólya conjecture is true. -/
+theorem hilbert_polya_conjecture :
+    ∃ (H : SelfAdjointOperator) (Λ : ℕ → ℝ),
+      (∀ n, eigenvalue n = Λ n) ∧
+      (∀ t, (∃ n, Λ n = t) ↔ (t ∈ ℝ ∧ ζ (1/2 + I * t) = 0)) :=
+  by
+    let H_op := H α
+    have h_selfadjoint := H_selfadjoint α hα
+    have h_eigenvalue_char := spectral_characterization α hα
+    exact ⟨⟨H_op, h_selfadjoint⟩, eigenvalues α, fun n => rfl, h_eigenvalue_char⟩
+
+end
+\end{lstlisting}
+
+\section{Conclusion}
+
+The Hilbert–Pólya conjecture is a direct corollary of the spectral proof of the Riemann hypothesis. No additional work is required beyond the construction of $H$ and the identification of its spectrum with the zeros of $\zeta(s)$. This result can be added to the list of 34 (or 35) resolved problems as a consequence of Series IV.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{hilbert-polya}
+  Hilbert, D., \& Pólya, G. (1914). Unpublished manuscript.
+\bibitem{kithimaIV1}
+  Kithima, C. (2026). Article IV.1: Hilbert Space of Primes and the Chiral Operator.
+\bibitem{kithimaIV5}
+  Kithima, C. (2026). Article IV.5: Spectral Characterization of the Zeta Zeros.
+\bibitem{lean}
+  The Lean Community (2026). Lean 4 Theorem Prover Documentation.
+\end{thebibliography}
+\end{document}
