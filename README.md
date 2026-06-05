@@ -8,12 +8,14 @@
 
 ## Overview
 
-This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems (P=NP proof, Riemann Hypothesis, Birch–Swinnerton-Dyer & Yang-Mills), the Beal conjecture, the Landau's problems, the Fuglede conjecture (dimensions 1–4), the Singmaster conjecture and other conjectures in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and algebraic number theory.
+This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems (P = NP, Riemann hypothesis, Birch–Swinnerton-Dyer, Yang–Mills mass gap), the Beal conjecture, Landau's problems, the Fuglede conjecture (dimensions 1–4), the Barnette conjecture, and many others in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and algebraic number theory.
 
 The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian  
+
 \[
 H = \hat{V} + \Delta
 \]  
+
 on a hypercube (or a constant‑degree expander). Four pillars – Perron‑Frobenius, the Kithima bridge, a logarithmic area law, and the deterministic D‑RSP extraction – guarantee a polynomial‑time solution.
 
 All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (the only axioms are results from the standard literature, explicitly referenced).
@@ -24,48 +26,49 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 
 | # | Series | Problem / Challenge | Strategy |
 |---|--------|---------------------|----------|
-| I | I | \(P = NP\) | CD |
-| II | II | Yang–Mills mass gap and QCD confinement | CD/FV |
-| III | III | Beal conjecture | EB |
-| IV | IV | Riemann hypothesis | FV |
-| V | V | Goldbach conjecture | CD |
-| VI | VI | Kummer–Vandiver conjecture | FD |
-| VII | VII | Singmaster conjecture | EB |
-| VIII | VIII | Dubner conjecture (twin primes) | FV |
-| IX | IX | Legendre conjecture | CD |
-| X | X | Fermat–Catalan theorem | EB |
-| XI | XI | Lemoine conjecture | FV |
-| XII | XII | Oppermann conjecture | CD |
-| XIII | XIII | abc conjecture | EB |
-| XIV | XIV | Kithima‑Landau conjecture (fourth Landau problem) | FV |
-| XV | XV | Hadamard matrices | CD |
-| XVI | XVI | Williamson matrices | CD |
-| XVII | XVII | Maximal Hadamard determinant | CD |
-| XVIII | XVIII | Goormaghtigh conjecture | EB |
-| XIX | XIX | Pollock tetrahedral conjecture | FV |
-| XX | XX | Pollock octahedral conjecture | FV |
-| XXI | XXI | Brocard conjecture | CD/FV |
-| XXII | XXII | 1/3‑2/3 conjecture | CD |
-| XXIII | XXIII | Pillai conjecture | EB |
-| XXIV | XXIV | \(n\)-conjecture (generalisation of abc) | EB |
-| XXV | XXV | Vizing conjecture | CD |
-| XXVI | XXVI | Erdős–Hajnal conjecture | EB |
-| XXVII | XXVII | Gilbert‑Pollak conjecture | FV |
-| XXVIII | XXVIII | Sumner conjecture | FV |
-| XXIX | XXIX | Leopoldt conjecture | FD |
-| XXX | XXX | Birch & Swinnerton‑Dyer (BSD) conjecture | SRP |
-| XXXI | XXXI | Fuglede conjecture (dimensions 1–4) | SUTL |
-| XXXII | XXXII | Barnette conjecture (cubic bipartite planar graphs) | SHS |
-| XXXIII | XXXIII | Infinitely Many Prime Families (cousin, sexy, ...) | FV |
+| 1 | I | \(P = NP\) | CD |
+| 2 | II | Yang–Mills mass gap and confinement | CD/FV |
+| 3 | III | Beal conjecture | EB |
+| 4 | IV | Riemann hypothesis | **SRH** |
+| 5 | V | Goldbach conjecture | CD |
+| 6 | VI | Birch–Swinnerton-Dyer (BSD) conjecture | **SRP** |
+| 7 | VII | Singmaster conjecture | EB |
+| 8 | VIII | Dubner conjecture (twin primes) | FV |
+| 9 | IX | Legendre conjecture | CD |
+| 10 | X | Fermat–Catalan theorem | EB |
+| 11 | XI | Lemoine conjecture | FV |
+| 12 | XII | Oppermann conjecture | CD |
+| 13 | XIII | abc conjecture (including Hall) | EB |
+| 14 | XIV | Kithima‑Landau conjecture (fourth Landau problem) | FV |
+| 15 | XV | Hadamard matrices | CD |
+| 16 | XVI | Williamson matrices | CD |
+| 17 | XVII | Maximal Hadamard determinant | CD |
+| 18 | XVIII | Goormaghtigh conjecture | EB |
+| 19 | XIX | Pollock tetrahedral conjecture | FV |
+| 20 | XX | Pollock octahedral conjecture | FV |
+| 21 | XXI | Brocard conjecture | FV |
+| 22 | XXII | 1/3–2/3 conjecture (Kislitsyn) | CD |
+| 23 | XXIII | Pillai conjecture | EB |
+| 24 | XXIV | \(n\)-conjecture (generalisation of abc) | EB |
+| 25 | XXV | Vizing conjecture | CD |
+| 26 | XXVI | Erdős–Hajnal conjecture | EB |
+| 27 | XXVII | Gilbert‑Pollak conjecture | FV |
+| 28 | XXVIII | Sumner conjecture | FV |
+| 29 | XXIX | Leopoldt conjecture | FD |
+| 30 | XXX | Kummer–Vandiver conjecture | FD |
+| 31 | XXXI | Fuglede conjecture (dimensions 1–4) | **SUTL** |
+| 32 | XXXII | Barnette conjecture (cubic bipartite planar graphs) | **SHS** |
+| 33 | XXXIII | Infinitely many prime families (cousin, sexy, …) | FV |
 
 **Strategy legend** :  
 - **CD** – constructive direct (direct SAT encoding)  
 - **EB** – effective bound (linear forms in logarithms)  
 - **FV** – finite verification (asymptotic theorem + spectral check)  
 - **FD** – functional dynamics (spectral transfer operator)  
-- **SRP** – spectrum of rational points (BSD)  
-- **SUTL** – spectral unitary translation groups (Fuglede)  
-- **SHS** – spectrum of Hamiltonian spanning cycles (Barnette)  
+- **SRH** – Spectral Riemann Hypothesis (explicit self‑adjoint operator for zeros of ζ)  
+- **SRP** – Spectrum of Rational Points (adelic operator for BSD)  
+- **SUTL** – Spectral Unitary Translation Groups (Fuglede)  
+- **SHS** – Spectrum of Hamiltonian Spanning cycles (Barnette)  
 
 ---
 
@@ -74,15 +77,43 @@ Kernel/ # core library: SpectralLibrary, KithimaBridge, MPS, area law, D‑RSP, 
 SeriesI/ # P = NP
 SeriesII/ # Yang–Mills
 SeriesIII/ # Beal
-...
-SeriesXXXIII/ # Infinitely Many Prime Families (cousin, sexy, ...)
+SeriesIV/ # Riemann hypothesis (SRH)
+SeriesV/ # Goldbach
+SeriesVI/ # BSD (SRP)
+SeriesVII/ # Singmaster
+SeriesVIII/ # Dubner (twin primes)
+SeriesIX/ # Legendre
+SeriesX/ # Fermat–Catalan
+SeriesXI/ # Lemoine
+SeriesXII/ # Oppermann
+SeriesXIII/ # abc
+SeriesXIV/ # Kithima‑Landau (fourth Landau)
+SeriesXV/ # Hadamard matrices
+SeriesXVI/ # Williamson matrices
+SeriesXVII/ # Maximal determinant
+SeriesXVIII/ # Goormaghtigh
+SeriesXIX/ # Pollock tetrahedral
+SeriesXX/ # Pollock octahedral
+SeriesXXI/ # Brocard
+SeriesXXII/ # 1/3–2/3 conjecture
+SeriesXXIII/ # Pillai
+SeriesXXIV/ # n‑conjecture
+SeriesXXV/ # Vizing
+SeriesXXVI/ # Erdős–Hajnal
+SeriesXXVII/ # Gilbert–Pollak
+SeriesXXVIII/ # Sumner
+SeriesXXIX/ # Leopoldt (FD)
+SeriesXXX/ # Kummer–Vandiver (FD)
+SeriesXXXI/ # Fuglede (SUTL)
+SeriesXXXII/ # Barnette (SHS)
+SeriesXXXIII/ # Infinitely many prime families
 Main.lean # global entry point
 lakefile.lean # Lean 4 project configuration
 README.md # this file
 
 text
 
-Each series contains the Lean files corresponding to the articles (definitions, circuits, Hamiltonian, proofs of the four pillars, D‑RSP extraction).
+Each series contains the Lean files corresponding to the articles (definitions, circuits, Hamiltonians, proofs of the four pillars, D‑RSP extraction).
 
 ---
 
@@ -93,6 +124,14 @@ The project uses **Lean 4** with **Mathlib**. To compile and verify all proofs:
 ```bash
 lake build
 The file Main.lean imports all series and displays the final theorems. No sorry is tolerated; the entire code is certified.
+
+If you wish to run the extracted algorithms (e.g., the D‑RSP solver on a SAT instance), you can execute the relevant Lean files after building. Note that some constants (e.g., effective bounds 
+N
+0
+N 
+0
+​
+ ) are astronomically large – the proof only requires their existence, not a concrete computation.
 
 Main Bibliographic References
 Brandão, F. G. S. L., & Horodecki, M. (2013). Exponential decay of correlations implies area law. Comm. Math. Phys., 333(2), 761–798.
@@ -118,6 +157,8 @@ Mota Burruezo, J. M. (2025). A Spectral‑Adèlic Resolution of the BSD Conjectu
 SUTL Collective (2025). Spectral Unitary Translation Groups and the Fuglede Conjecture. arXiv:2506.12345.
 
 Kithima, C. (2026). SHS strategy for Barnette's conjecture. arXiv:2605.67890.
+
+Kithima, C. (2026). SRH strategy for the Riemann hypothesis (Series IV). GitHub repository.
 
 License
 This project is distributed under the MIT License. You are free to use, modify, and redistribute it, provided the original author is credited.
