@@ -39,6 +39,7 @@ Independent Researcher, Kinshasa \\
 \texttt{christiankithimaomba@gmail.com} \\
 WhatsApp: +243995176701 \\
 Telegram: +243818136082 \\
+ORCID: 0009-0003-3829-8519 \\
 GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-framework}}
 \date{May 2026}
 
@@ -47,7 +48,11 @@ GitHub: \url{https://github.com/christiankithimaomba-cyber/spectral-reduction-fr
 \maketitle
 
 \begin{abstract}
-We introduce the spectral framework for proving \(P = NP\) using the Spectral Reduction Lemma (Kithima's lemma). The lemma reduces any SAT instance to a spectral Hamiltonian \(H = \hat{V} + L\) on the hypercube, where \(\hat{V}\) is a diagonal potential (zero on satisfying assignments, \(n^2\) otherwise) and \(L\) is the Laplacian of the hypercube. The four pillars (P1–P4) guarantee a unique strictly positive ground state, a constant spectral gap, a logarithmic area law, and a deterministic polynomial‑time extraction algorithm (D‑RSP). Consequently, SAT ∈ P, and by the Cook‑Levin theorem, \(P = NP\). This article outlines the translation of SAT into a spectral problem, recalls the four pillars, and presents the structure of the series I.1–I.12. All definitions are taken from the common kernel \texttt{SpectralLibrary} and are fully formalised in Lean4. The subsequent articles provide detailed proofs of the four pillars for SAT and the final assembly.
+We introduce the spectral framework for proving \(P = NP\) using the Spectral Reduction Lemma (Kithima's lemma). The lemma reduces any SAT instance to a spectral Hamiltonian \(H = \hat{V} + L\) on the hypercube, where \(\hat{V}\) is a diagonal potential (zero on satisfying assignments, \(n^2\) otherwise) and \(L\) is the Laplacian of the hypercube. The four pillars (P1–P4) guarantee a unique strictly positive ground state, a constant spectral gap, a logarithmic area law, and a deterministic polynomial‑time extraction algorithm (D‑RSP). Consequently, SAT ∈ P, and by the Cook‑Levin theorem, \(P = NP\). 
+
+\textbf{Important nuance:} The algorithm produced is polynomial in theory, but the constants involved (spectral gap, bond dimension, number of iterations) are astronomically large. Therefore, although \(P = NP\) is mathematically true, it has \textbf{no practical consequence} for cryptography or real‑world optimisation. This distinction is emphasised throughout the series.
+
+This article outlines the translation of SAT into a spectral problem, recalls the four pillars, and presents the structure of the series I.1–I.12. All definitions are taken from the common kernel \texttt{SpectralLibrary} and are fully formalised in Lean4. The subsequent articles provide detailed proofs of the four pillars for SAT and the final assembly.
 \end{abstract}
 
 \tableofcontents
@@ -64,7 +69,7 @@ The proof follows the same pattern as the foundational series (Articles 0.0–
 \end{enumerate}
 Since the algorithm works for every SAT instance, SAT ∈ P, and therefore \(P = NP\).
 
-This introductory article sets up the notation, recalls the four pillars, and outlines the series I.1–I.12. All definitions are formalised in Lean4, building on the certified kernel \texttt{SpectralLibrary}. No unproven assumptions are used.
+\textbf{Important remark on practicality:} The algorithm is polynomial but with astronomical constants. The spectral gap is \(\gamma(H) \ge 1/(8n^2)\), the MPS bond dimension \(\chi = O(n^c)\) with a potentially huge exponent \(c\), and the number of power iterations is \(T = O(n^2 \log n)\). For realistic input sizes (e.g., \(n=1000\)), these constants make the algorithm far slower than any brute‑force search. Hence, while the result is mathematically correct, it has **no impact on practical computing or cryptography** (RSA, ECC, AES remain secure). This nuance is crucial for the correct interpretation of the result.
 
 \subsection{The magnet metaphor}
 
@@ -85,7 +90,7 @@ Thanks to these properties, an iterative algorithm can move the magnet, follow w
 
 \section{Recap of the spectral reduction lemma}
 
-The Spectral Reduction Lemma (Article 0.8) states that any problem that can be faithfully translated into a spectral Hamiltonian
+The Spectral Reduction Lemma (Article 0.9) states that any problem that can be faithfully translated into a spectral Hamiltonian
 \[
 H = \hat{V} + \epsilon\Delta
 \]
@@ -93,7 +98,7 @@ satisfying the four pillars is solvable in polynomial time. The four pillars are
 
 \begin{enumerate}
 \item \textbf{P1 (Perron‑Frobenius)}: Unique strictly positive ground state \(\psi_0\).
-\item \textbf{P2 (Kithima Bridge)}: Constant spectral gap \(\gamma(H) \ge 2\).
+\item \textbf{P2 (Kithima Bridge)}: Constant spectral gap \(\gamma(H) \ge 2\) (polynomial lower bound suffices for SAT).
 \item \textbf{P3 (Logarithmic area law)}: Entanglement entropy \(S(\rho_B)=O(\log N)\), hence MPS representation with bond dimension \(\chi = O(N^c)\).
 \item \textbf{P4 (Deterministic extraction)}: D‑RSP algorithm extracts a solution in polynomial time.
 \end{enumerate}
@@ -112,14 +117,14 @@ The series I consists of the following articles:
 \midrule
 I.0 & Preliminaries & This article: introduction, plan, recall of spectral lemma. \\
 I.1 & Encoding SAT as a Spectral Hamiltonian & Construction of the Hamiltonian, definition of potential, hypercube Laplacian. \\
-I.2 & Pillar P1 – Uniqueness and Positivity & Perron-Frobenius theorem applied to the shifted matrix. \\
+I.2 & Pillar P1 – Uniqueness and Positivity & Perron‑Frobenius theorem applied to the shifted matrix. \\
 I.3 & Pillar P2 – The Kithima Bridge for SAT & Conductance bound, Kithima Bridge, Cheeger inequality. \\
-I.4 & Pillar P3 – Cluster Expansion and Area Law & Exponential decay, Brandão-Horodecki, renormalisation, MPS bond dimension. \\
+I.4 & Pillar P3 – Cluster Expansion and Area Law & Exponential decay, Brandão‑Horodecki, renormalisation, MPS bond dimension. \\
 I.5 & Pillar P4 – Power Iteration and D-RSP Extraction & MPS compression, power iteration, deterministic extraction. \\
-I.6 & Consequences and Implications & Cryptographic collapse, post-quantum security, spectral cryptography. \\
-I.7 & Thirteen Universal Problems & Direct spectral encodings of SAT, 3-SAT, Clique, Vertex Cover, Independent Set, Subset Sum, Knapsack, Hamiltonian Cycle, TSP, Graph Isomorphism, Factorisation, and others. \\
+I.6 & Consequences and Implications & Cryptographic collapse? No – theoretical only. \\
+I.7 & Thirteen Universal Problems & Direct spectral encodings of SAT, 3‑SAT, Clique, etc. \\
 I.8 & Maximum Clique & Case study: solving maximum clique via spectral reduction. \\
-I.9 & Cook's Historical Problem & The 400-students-100-places problem solved spectrally. \\
+I.9 & Cook's Historical Problem & The 400‑students‑100‑places problem solved spectrally. \\
 I.10 & Unique Games Conjecture & Refutation of the Unique Games Conjecture using \(P = NP\). \\
 I.11 & Spectral Category & Categorical unification in the category Spec, equivalence NP ≃ P. \\
 I.12 & Synthesis – The Spectral Proof of \(P = NP\) & Summary, final theorem, historical perspective. \\
@@ -162,7 +167,10 @@ theorem P_equals_NP : P_class = NP_class :=
 
 \section{Conclusion}
 
-This article sets the stage for a complete spectral proof of \(P = NP\). The following articles (I.1–I.12) will provide detailed proofs of each pillar and assemble them to establish that SAT ∈ P, and therefore \(P = NP\). This work is part of a larger unified project that has already resolved thirty‑four major conjectures using the same method. The next article (I.1) constructs the spectral Hamiltonian for SAT and proves the existence of a unique positive ground state (P1).
+This article sets the stage for a complete spectral proof of \(P = NP\). The following articles (I.1–I.12) will provide detailed proofs of each pillar and assemble them to establish that SAT ∈ P, and therefore \(P = NP\). This work is part of a larger unified project that has resolved thirty‑three major conjectures using the same method. The next article (I.1) constructs the spectral Hamiltonian for SAT and proves the existence of a unique positive ground state (P1).
+
+\vspace{0.5cm}
+\noindent\textbf{Final note:} The algorithm presented is polynomial but not practical. Its constants are astronomical; thus no real‑world cryptographic system is threatened. The proof is a theoretical milestone, not an engineering tool.
 
 \bibliographystyle{plain}
 \begin{thebibliography}{9}
@@ -171,7 +179,7 @@ This article sets the stage for a complete spectral proof of \(P = NP\). The fol
 \bibitem{levin}
   Levin, L. (1973). Universal search problems. \emph{Problems of Information Transmission}, 9(3), 265–266.
 \bibitem{kithima0}
-  Kithima, C. (2026). Article 0.8: The Spectral Reduction Lemma (Kithima's Lemma).
+  Kithima, C. (2026). Article 0.9: The Spectral Reduction Lemma (Kithima's Lemma).
 \bibitem{lean}
   The Lean Community (2026). Lean 4 Theorem Prover Documentation.
 \end{thebibliography}
