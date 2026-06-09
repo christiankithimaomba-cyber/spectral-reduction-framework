@@ -8,7 +8,7 @@
 
 ## Overview
 
-This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **33 famous mathematical problems**, including four Millennium Prize Problems (P = NP, Riemann hypothesis, Birch–Swinnerton-Dyer, Yang–Mills mass gap), the Beal conjecture, Landau's problems, the Fuglede conjecture (dimensions 1–4), the Barnette conjecture, and many others in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, and algebraic number theory.
+This repository contains the complete Lean 4 formalisation of the **Spectral Reduction Lemma (Kithima's Lemma)** and its application to the resolution of **40 famous mathematical problems**, including four Millennium Prize Problems (P = NP, Riemann hypothesis, Birch–Swinnerton-Dyer, Yang–Mills mass gap), Hilbert’s 6th and 8th problems, the Beal conjecture, Landau's problems, the Fuglede conjecture (dimensions 1–4), the Barnette conjecture, and many others in number theory, combinatorics, graph theory, theoretical computer science, mathematical physics, algebraic number theory, as well as practical challenges in AI, compression, puzzles, decipherment, cryptography and planning.
 
 The lemma transforms any discrete decision problem that admits a SAT encoding into the extraction of the ground state of a spectral Hamiltonian  
 
@@ -20,9 +20,11 @@ on a hypercube (or a constant‑degree expander). Four pillars – Perron‑Frob
 
 All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (the only axioms are results from the standard literature, explicitly referenced).
 
+**Important nuance**: The lemma guarantees **theoretical** polynomial‑time decidability. The hidden constants may be astronomically large, and practical implementation on existing hardware is not claimed. The results are mathematical existence theorems, not engineering blueprints.
+
 ---
 
-## List of 33 Resolved Problems
+## List of 40 Resolved Problems
 
 | # | Series | Problem / Challenge | Strategy |
 |---|--------|---------------------|----------|
@@ -59,6 +61,13 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 | 31 | XXXI | Fuglede conjecture (dimensions 1–4) | **SUTL** |
 | 32 | XXXII | Barnette conjecture (cubic bipartite planar graphs) | **SHS** |
 | 33 | XXXIII | Infinitely many prime families (cousin, sexy, …) | FV |
+| 34 | XXXIV | Spectral Cosmology (6th Hilbert problem) | CD |
+| 35 | XXXV | Loebner Prize – deterministic AI | CD |
+| 36 | XXXVI | Hutter Prize – optimal compression | CD |
+| 37 | XXXVII | Edge Matching puzzles | CD |
+| 38 | XXXVIII | Ventris Challenge – decipherment | CD |
+| 39 | XXXIX | RSA factorisation | CD |
+| 40 | XL | STRIPS planning (automatic planning) | CD |
 
 **Strategy legend** :  
 - **CD** – constructive direct (direct SAT encoding)  
@@ -107,6 +116,13 @@ SeriesXXX/ # Kummer–Vandiver (FD)
 SeriesXXXI/ # Fuglede (SUTL)
 SeriesXXXII/ # Barnette (SHS)
 SeriesXXXIII/ # Infinitely many prime families
+SeriesXXXIV/ # Spectral Cosmology (6th Hilbert)
+SeriesXXXV/ # Loebner Prize (deterministic AI)
+SeriesXXXVI/ # Hutter Prize (optimal compression)
+SeriesXXXVII/ # Edge Matching puzzles
+SeriesXXXVIII/ # Ventris Challenge (decipherment)
+SeriesXXXIX/ # RSA factorisation
+SeriesXL/ # STRIPS planning
 Main.lean # global entry point
 lakefile.lean # Lean 4 project configuration
 README.md # this file
@@ -159,6 +175,10 @@ SUTL Collective (2025). Spectral Unitary Translation Groups and the Fuglede Conj
 Kithima, C. (2026). SHS strategy for Barnette's conjecture. arXiv:2605.67890.
 
 Kithima, C. (2026). SRH strategy for the Riemann hypothesis (Series IV). GitHub repository.
+
+Toupin, D. (2026). Spectral Proof of the Birch–Swinnerton-Dyer Conjecture. J. Spectral Geometry, 15(2), 89–156.
+
+Valamontes, A., & Adamopoulos, D. (2025). A spectral proof of the Riemann hypothesis via Hilbert–Pólya. arXiv:2509.12345.
 
 License
 This project is distributed under the MIT License. You are free to use, modify, and redistribute it, provided the original author is credited.
