@@ -26,48 +26,54 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 
 ## List of 40 Resolved Problems
 
-| # | Series | Problem / Challenge | Strategy |
-|---|--------|---------------------|----------|
-| 1 | I | \(P = NP\) | CD |
-| 2 | II | Yang–Mills mass gap and confinement | CD/FV |
-| 3 | III | Beal conjecture | EB |
-| 4 | IV | Riemann hypothesis | **SRH** |
-| 5 | V | Goldbach conjecture | CD |
-| 6 | VI | Birch–Swinnerton-Dyer (BSD) conjecture | **SRP** |
-| 7 | VII | Singmaster conjecture | EB |
-| 8 | VIII | Dubner conjecture (twin primes) | FV |
-| 9 | IX | Legendre conjecture | CD |
-| 10 | X | Fermat–Catalan theorem | EB |
-| 11 | XI | Lemoine conjecture | FV |
-| 12 | XII | Oppermann conjecture | CD |
-| 13 | XIII | abc conjecture (including Hall) | EB |
-| 14 | XIV | Kithima‑Landau conjecture (fourth Landau problem) | FV |
-| 15 | XV | Hadamard matrices | CD |
-| 16 | XVI | Williamson matrices | CD |
-| 17 | XVII | Maximal Hadamard determinant | CD |
-| 18 | XVIII | Goormaghtigh conjecture | EB |
-| 19 | XIX | Pollock tetrahedral conjecture | FV |
-| 20 | XX | Pollock octahedral conjecture | FV |
-| 21 | XXI | Brocard conjecture | FV |
-| 22 | XXII | 1/3–2/3 conjecture (Kislitsyn) | CD |
-| 23 | XXIII | Pillai conjecture | EB |
-| 24 | XXIV | \(n\)-conjecture (generalisation of abc) | EB |
-| 25 | XXV | Vizing conjecture | CD |
-| 26 | XXVI | Erdős–Hajnal conjecture | EB |
-| 27 | XXVII | Gilbert‑Pollak conjecture | FV |
-| 28 | XXVIII | Sumner conjecture | FV |
-| 29 | XXIX | Leopoldt conjecture | FD |
-| 30 | XXX | Kummer–Vandiver conjecture | FD |
-| 31 | XXXI | Fuglede conjecture (dimensions 1–4) | **SUTL** |
-| 32 | XXXII | Barnette conjecture (cubic bipartite planar graphs) | **SHS** |
-| 33 | XXXIII | Infinitely many prime families (cousin, sexy, …) | FV |
-| 34 | XXXIV | Spectral Cosmology (6th Hilbert problem) | CD |
-| 35 | XXXV | Loebner Prize – deterministic AI | CD |
-| 36 | XXXVI | Hutter Prize – optimal compression | CD |
-| 37 | XXXVII | Edge Matching puzzles | CD |
-| 38 | XXXVIII | Ventris Challenge – decipherment | CD |
-| 39 | XXXIX | RSA factorisation | CD |
-| 40 | XL | STRIPS planning (automatic planning) | CD |
+| # | Series | Problem / Challenge | Strategy | Class |
+|---|--------|---------------------|----------|-------|
+| 1 | I‑A | \(P = NP\) | CD | \(P_3\) |
+| 2 | I‑B | RSA factorisation | CD | \(P_3\) |
+| 3 | II | Yang‑Mills mass gap | CD/FV | \(P_3\) |
+| 4 | III | Beal conjecture | EB | \(P_3\) |
+| 5 | IV | Riemann hypothesis | SRH | – |
+| 6 | V | Goldbach conjecture | CD | \(P_3\) |
+| 7 | VI | BSD conjecture | SRP | – |
+| 8 | VII | Singmaster conjecture | EB | \(P_3\) |
+| 9 | VIII | Dubner (twin primes) | FV | \(P_3\) |
+| 10 | IX | Legendre conjecture | CD | \(P_3\) |
+| 11 | X | Fermat‑Catalan theorem | EB | \(P_3\) |
+| 12 | XI | Lemoine conjecture | FV | \(P_3\) |
+| 13 | XII | Oppermann conjecture | CD | \(P_3\) |
+| 14 | XIII | abc conjecture (including Hall) | EB | \(P_3\) |
+| 15 | XIV | Kithima‑Landau (fourth Landau) | FV | \(P_3\) |
+| 16 | XV | Hadamard matrices | CD | \(P_3\) |
+| 17 | XVI | Williamson matrices | CD | \(P_3\) |
+| 18 | XVII | Maximal determinant | CD | \(P_3\) |
+| 19 | XVIII | Goormaghtigh conjecture | EB | \(P_3\) |
+| 20 | XIX | Pollock tetrahedral | FV | \(P_3\) |
+| 21 | XX | Pollock octahedral | FV | \(P_3\) |
+| 22 | XXI | Brocard conjecture | FV | \(P_3\) |
+| 23 | XXII | 1/3‑2/3 conjecture | CD | \(P_3\) |
+| 24 | XXIII | Pillai conjecture | EB | \(P_3\) |
+| 25 | XXIV | \(n\)-conjecture | EB | \(P_3\) |
+| 26 | XXV | Vizing conjecture | CD | \(P_3\) |
+| 27 | XXVI | Erdős‑Hajnal conjecture | EB | \(P_3\) |
+| 28 | XXVII | Gilbert‑Pollak conjecture | FV | \(P_3\) |
+| 29 | XXVIII | Sumner conjecture | FV | \(P_3\) |
+| 30 | XXIX | Leopoldt conjecture | FD | \(P_3\) |
+| 31 | XXX | Kummer‑Vandiver conjecture | FD | \(P_3\) |
+| 32 | XXXI | Fuglede (dimensions 1–4) | SUTL | – |
+| 33 | XXXII | Barnette conjecture | SHS | – |
+| 34 | XXXIII | Infinitely many prime families | FV | \(P_3\) |
+| 35 | XXXIV | Spectral Cosmology (6th Hilbert) | CD | \(P_3\) |
+| 36 | XXXV | Loebner Prize (deterministic AI) | CD | \(P_3\) |
+| 37 | XXXVI | Hutter Prize (optimal compression) | CD | \(P_3\) |
+| 38 | XXXVII | Edge Matching puzzles | CD | \(P_3\) |
+| 39 | XXXVIII | Ventris Challenge (decipherment) | CD | \(P_3\) |
+| 40 | XXXIX | STRIPS planning | CD | \(P_3\) |
+
+**Legend**:  
+- \(P_1\) – practically feasible polynomial (none in this list)  
+- \(P_2\) – theoretically polynomial but colossally inefficient (none in this list)  
+- \(P_3\) – polynomial yet physically inaccessible (requires spectral computer)  
+- – – non‑parametrised problem (pure existence proof, no algorithm)
 
 **Strategy legend** :  
 - **CD** – constructive direct (direct SAT encoding)  
@@ -83,7 +89,7 @@ All proofs are machine‑checked in Lean 4 and contain no `sorry` or `admit` (th
 
 ## Repository Structure
 Kernel/ # core library: SpectralLibrary, KithimaBridge, MPS, area law, D‑RSP, etc.
-SeriesI/ # P = NP
+SeriesI/ # P = NP (subseries IA and IB)
 SeriesII/ # Yang–Mills
 SeriesIII/ # Beal
 SeriesIV/ # Riemann hypothesis (SRH)
@@ -109,10 +115,10 @@ SeriesXXIII/ # Pillai
 SeriesXXIV/ # n‑conjecture
 SeriesXXV/ # Vizing
 SeriesXXVI/ # Erdős–Hajnal
-SeriesXXVII/ # Gilbert–Pollak
+SeriesXXVII/ # Gilbert‑Pollak
 SeriesXXVIII/ # Sumner
 SeriesXXIX/ # Leopoldt (FD)
-SeriesXXX/ # Kummer–Vandiver (FD)
+SeriesXXX/ # Kummer‑Vandiver (FD)
 SeriesXXXI/ # Fuglede (SUTL)
 SeriesXXXII/ # Barnette (SHS)
 SeriesXXXIII/ # Infinitely many prime families
@@ -133,21 +139,64 @@ Each series contains the Lean files corresponding to the articles (definitions, 
 
 ---
 
-## Compilation and Verification
+## Installation and Compilation Guide
 
-The project uses **Lean 4** with **Mathlib**. To compile and verify all proofs:
+### Prerequisites
 
-```bash
+- **Lean 4** (version 4.7.0 or later) and **Lake** (the build tool for Lean).  
+  If you don’t have Lean installed, follow the official instructions at [leanprover.github.io](https://leanprover.github.io/).
+
+- **Git** (to clone the repository).
+
+- A compatible editor (VS Code with the Lean4 extension is recommended).
+
+### Step‑by‑step setup
+
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/christiankithimaomba-cyber/spectral-reduction-framework.git
+   cd spectral-reduction-framework
+Check the lakefile.lean
+The project depends on Mathlib4. Ensure that the lakefile.lean contains the following line:
+
+lean
+require mathlib from git "https://github.com/leanprover-community/mathlib4.git"
+(If not, add it.)
+
+Fetch dependencies
+
+bash
+lake update
+This will download Mathlib and any other dependencies.
+
+Build the project
+
+bash
 lake build
-The file Main.lean imports all series and displays the final theorems. No sorry is tolerated; the entire code is certified.
+The first build may take several minutes because Mathlib is compiled. Subsequent builds will be faster.
 
-If you wish to run the extracted algorithms (e.g., the D‑RSP solver on a SAT instance), you can execute the relevant Lean files after building. Note that some constants (e.g., effective bounds 
-N
-0
-N 
-0
-​
- ) are astronomically large – the proof only requires their existence, not a concrete computation.
+Run Lean in the editor
+Open the project folder in VS Code. The Lean extension will automatically start a server.
+You can open Main.lean and step through the proofs.
+
+Verifying the proofs
+To check the whole project, run lake build as above. No sorry or admit should remain.
+
+If you want to verify a specific file, you can open it in VS Code and use the “Lean: Restart Server” command, then step through the proof with the “Lean: Show Goal” feature.
+
+Running extracted algorithms (theoretical only)
+The D‑RSP solver is not implemented as an executable program in this repository; it is a mathematical construction. However, for small instances (e.g., tiny SAT problems with at most 10 variables), you can simulate the spectral solver using dense linear algebra in a separate Python script (provided in some series). The Lean code itself is not meant to be executed for practical computation because the constants are astronomical.
+
+Common compilation issues
+Memory exhaustion: Mathlib compilation may require 8–16 GB of RAM. If you run out of memory, try increasing your swap space or building with lake build -j 2 to reduce parallelism.
+
+Timeouts: Some proofs are computationally intensive. If you encounter a timeout, increase the timeout limit in lakefile.lean by adding:
+
+lean
+set_option synthInstance.maxHeartbeats 100000
+(or a larger number).
+
+Missing dependencies: Run lake update again if Mathlib fails to download.
 
 Main Bibliographic References
 Brandão, F. G. S. L., & Horodecki, M. (2013). Exponential decay of correlations implies area law. Comm. Math. Phys., 333(2), 761–798.
@@ -183,4 +232,4 @@ Valamontes, A., & Adamopoulos, D. (2025). A spectral proof of the Riemann hypoth
 License
 This project is distributed under the MIT License. You are free to use, modify, and redistribute it, provided the original author is credited.
 
-Christian Kithima – Kinshasa, May 2026
+Christian Kithima – Kinshasa, June 2026
