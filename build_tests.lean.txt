@@ -1,0 +1,60 @@
+/- 
+tests/build_tests.lean – Simple tests for the spectral kernel.
+-/
+
+import Mathlib.Tactic
+import Kernel.HypercubeHarper
+import Kernel.SpectralLibrary
+import Kernel.DiscreteCheeger
+
+open HypercubeHarper
+
+-- Helper definition: set of configurations with Hamming weight exactly k.
+def hammingLayer (n k : ℕ) : Finset (Config n) :=
+  Finset.filter (fun x => hammingWeight x = k) Finset.univ
+
+-- The number of such configurations is the binomial coefficient.
+lemma card_hammingLayer (n k : ℕ) (hk : k ≤ n) : (hammingLayer n k).card = Nat.choose n k := by
+  let f (s : Finset (Fin n)) : Config n := fun i => decide (i ∈ s)
+  have hf_inj : Function.Injective f := by
+    intro s t h
+    ext i
+    have : decide (i ∈ s) = decide (i ∈ t) := congr_fun h i
+    simp only [decide_eq_decide] at this
+    exact this
+  have h_image : f '' (Finset.powerset_len k Finset.univ) = hammingLayer n k := by
+    ext x
+    simp [hammingLayer, hammingWeight, Finset.powerset_len, Finset.mem_image]
+    constructor
+    · intro ⟨s, hs, hx⟩
+      rw [← hx]
+      have h_card : (Finset.filter (fun i => decide (i ∈ s)) Finset.univ).card = k := by
+        have : (Finset.filter (fun i => decide (i ∈ s)) Finset.univ).card = s.card := by
+          apply Finset.card_filter_of_mem (fun i _ => ?_)
+          simp only [decide_eq_true_eq]
+          exact id
+        rw [this, hs]
+      exact ⟨h_card, rfl⟩
+    · intro ⟨h_card, rfl⟩
+      let s := Finset.filter (fun i => x i = true) Finset.univ
+      have h_card' : s.card = k := by
+        rw [← h_card]
+        simp [s, hammingWeight]
+      have h_eq : x = fun i => decide (i ∈ s) := by
+        funext i
+        simp only [decide_eq_true_eq]
+        rw [Finset.mem_filter]
+        simp
+        exact ⟨by trivial, by tauto⟩
+      exact ⟨s, h_card', h_eq⟩
+  rw [← h_image, Finset.card_image_of_injective hf_inj]
+  exact Finset.card_powerset_len k
+
+-- Test: for n = 3, k = 1, the size is 3.
+example : (hammingLayer 3 1).card = 3 := by
+  have : Nat.choose 3 1 = 3 := rfl
+  rw [card_hammingLayer 3 1 (by linarith)]
+  exact this
+
+-- Trivial test that always passes.
+example : True := by trivial
